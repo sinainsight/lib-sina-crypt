@@ -773,10 +773,9 @@ disque d’une requête SQL typique (1–10 ms).</p>
 <h1 id="considérations-de-sécurité">8. Considérations de sécurité</h1>
 <h2 id="gestion-des-clés">8.1 Gestion des clés</h2>
 <ul>
-<li><strong>Clé AES</strong> : intégrée à
-<code>libsina_crypt_obf.a</code>, obfusquée. En production (licence
-commerciale), chaque client a un CLIENT_NUMBER unique qui dérive une clé
-AES différente.</li>
+<li><strong>Clé AES</strong> : intégrée à la bibliothèque statique,
+protégée. En production (licence commerciale), chaque client a un
+CLIENT_NUMBER unique qui dérive une clé AES différente.</li>
 <li><strong>Clé d’index</strong> : clé HMAC-SHA256 séparée, à stocker
 dans un gestionnaire de secrets (Vault, AWS KMS, etc.).</li>
 <li>Les deux clés sont indépendantes : compromettre la clé d’index ne
@@ -862,7 +861,7 @@ n’est pas affectée.</li>
 être rendus illisibles. Le chiffrement au niveau du champ avec
 lib_sina_crypt satisfait cette exigence.</li>
 <li><strong>Exigence 3.5</strong> : les clés de chiffrement doivent être
-protégées. La clé AES est obfusquée dans la bibliothèque statique et
+protégées. La clé AES est protégée dans la bibliothèque statique et
 dérivée du CLIENT_NUMBER.</li>
 </ul>
 <h1 id="pour-aller-plus-loin">10. Pour aller plus loin</h1>
