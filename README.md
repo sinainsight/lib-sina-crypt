@@ -61,6 +61,133 @@ Both approaches are **deterministic** — the same plaintext always produces the
 | Blind index (HMAC) | 0.01 ms | Per field |
 | N-gram index | 0.05 ms | Per field (depends on length) |
 
+## FreeMium — Version d'évaluation
+
+Une version FreeMium est disponible en téléchargement libre :
+
+- **Bibliothèque statique** `.a` (Linux x86_64, macOS x86_64)
+- **Python wheel** : `pip install sina_crypt-2.1.0-cp312-cp312-manylinux_2_38_x86_64.whl`
+- **Démo SQLite** interactive (Go + Python)
+- **Whitepaper PDF** : [Chiffrement RGPD des bases de données](https://github.com/sinainsight/lib-sina-crypt/releases/download/v2.1.0-freemium/lib_sina_crypt-chiffrement-rgpd-bases-de-donnees.pdf)
+
+👉 [Télécharger la release v2.1.0-freemium](https://github.com/sinainsight/lib-sina-crypt/releases/tag/v2.1.0-freemium)
+
+> **⚠️ La version FreeMium utilise un CLIENT_NUMBER partagé.** Tout utilisateur FreeMium peut déchiffrer les données d'un autre FreeMium. Évaluation uniquement — licence commerciale avec clé dédiée : contact@sinainsight.eu
+
+## RGPD Database Encryption — Example
+
+### Schema (PostgreSQL)
+
+```sql
+CREATE TABLE clients (
+    id            SERIAL PRIMARY KEY,
+    -- Encrypted fields (BLOB/BYTEA) — opaque to anyone without the key
+    nom_cipher    BYTEA NOT NULL,
+    prenom_cipher BYTEA NOT NULL,
+    email_cipher  BYTEA NOT NULL,
+    iban_cipher   BYTEA NOT NULL,
+    tel_cipher    BYTEA NOT NULL,
+    -- Blind indices (HMAC-SHA256) — enable exact-match search without decryption
+    nom_hmac      TEXT NOT NULL,
+    email_hmac    TEXT NOT NULL,
+    iban_hmac     TEXT NOT NULL,
+    -- Metadata (not encrypted)
+    created_at    TIMESTAMPTZ DEFAULT NOW(),
+    status        TEXT DEFAULT 'actif'
+);
+
+CREATE INDEX idx_nom_hmac   ON clients(nom_hmac);
+CREATE INDEX idx_email_hmac ON clients(email_hmac);
+CREATE INDEX idx_iban_hmac  ON clients(iban_hmac);
+
+-- Trigram index table for partial search (LIKE '%dupont%')
+CREATE TABLE client_trigrams (
+    client_id   INTEGER REFERENCES clients(id) ON DELETE CASCADE,
+    field_name  TEXT NOT NULL,
+    trigram_idx TEXT NOT NULL
+);
+
+CREATE INDEX idx_trigrams ON client_trigrams(field_name, trigram_idx);
+```
+
+### INSERT — Encrypt fields before storing
+
+```python
+import sina_crypt
+import hmac, hashlib
+
+INDEX_KEY = b"your-secret-hmac-key-here"
+
+def blind_index(value):
+    return hmac.new(INDEX_KEY, value.lower().encode(), hashlib.sha256).hexdigest()
+
+# Encrypt each RGPD field with AES-256-GCM
+nom_enc   = sina_crypt.rgpd_crypt(b"Dupont")
+email_enc = sina_crypt.rgpd_crypt(b"jean.dupont@example.com")
+iban_enc  = sina_crypt.rgpd_crypt(b"FR76 3000 6000 0112 3456 7890 189")
+
+# Compute blind indices for searchable fields
+nom_idx   = blind_index("Dupont")
+email_idx = blind_index("jean.dupont@example.com")
+iban_idx  = blind_index("FR76 3000 6000 0112 3456 7890 189")
+
+cursor.execute("""
+    INSERT INTO clients (nom_cipher, email_cipher, iban_cipher,
+                         nom_hmac, email_hmac, iban_hmac)
+    VALUES (%s, %s, %s, %s, %s, %s)
+""", (nom_enc, email_enc, iban_enc, nom_idx, email_idx, iban_idx))
+```
+
+### SELECT — Search by blind index, decrypt result
+
+```sql
+-- Find by email: compare HMAC, never decrypt in the WHERE clause
+SELECT nom_cipher, prenom_cipher, email_cipher
+FROM clients
+WHERE email_hmac = 'a1b2c3...';  -- HMAC('jean.dupont@example.com')
+```
+
+```python
+# Application decrypts the result
+row = cursor.fetchone()
+nom   = sina_crypt.rgpd_decrypt(row[0])   # b"Dupont"
+email = sina_crypt.rgpd_decrypt(row[2])   # b"jean.dupont@example.com"
+```
+
+### SELECT partial — Trigram search (LIKE '%pont%')
+
+```sql
+-- Decompose 'pont' into trigrams: {pon, ont}
+-- Each trigram is HMAC'd and stored in client_trigrams
+SELECT c.nom_cipher, c.email_cipher
+FROM clients c
+WHERE c.id IN (
+    SELECT client_id FROM client_trigrams
+    WHERE trigram_idx IN ('hmac_pon', 'hmac_ont')
+    GROUP BY client_id
+    HAVING COUNT(DISTINCT trigram_idx) = 2
+);
+```
+
+### DELETE — RGPD Art. 17 Right to Erasure
+
+```sql
+-- Delete without decryption: use the blind index
+DELETE FROM clients
+WHERE email_hmac = 'a1b2c3...';  -- HMAC('jean.dupont@example.com')
+
+-- Cascade deletes trigrams (ON DELETE CASCADE)
+```
+
+### What the DBA sees
+
+| id | nom_cipher | email_hmac | status |
+|----|------------|------------|--------|
+| 1 | `\x51514b77466a...` | `d6957904c772cce3...` | actif |
+| 2 | `\x51536f347456...` | `a61ec88bb93eabc5...` | actif |
+
+The `_cipher` columns are opaque binary. The `_hmac` columns are deterministic hashes — they enable search but cannot be reversed to recover the plaintext.
+
 ## Use Cases
 
 - **GDPR compliance**: Encrypt PII columns (names, emails, addresses) while preserving search
