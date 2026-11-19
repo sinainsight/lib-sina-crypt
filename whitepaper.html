@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="fr" xml:lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="SINAINSIGHT SAS" />
+  <title>Chiffrement RGPD des bases de données</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {  background-color: #f8f8f8; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ef2929; } /* Alert */
+    code span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #204a87; } /* Attribute */
+    code span.bn { color: #0000cf; } /* BaseN */
+    code span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4e9a06; } /* Char */
+    code span.cn { color: #8f5902; } /* Constant */
+    code span.co { color: #8f5902; font-style: italic; } /* Comment */
+    code span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+    code span.dt { color: #204a87; } /* DataType */
+    code span.dv { color: #0000cf; } /* DecVal */
+    code span.er { color: #a40000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #0000cf; } /* Float */
+    code span.fu { color: #204a87; font-weight: bold; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+    code span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+    code span.ot { color: #8f5902; } /* Other */
+    code span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+    code span.sc { color: #ce5c00; font-weight: bold; } /* SpecialChar */
+    code span.ss { color: #4e9a06; } /* SpecialString */
+    code span.st { color: #4e9a06; } /* String */
+    code span.va { color: #000000; } /* Variable */
+    code span.vs { color: #4e9a06; } /* VerbatimString */
+    code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+    /* SINAINSIGHT whitepaper styles */
+    :root {
+      --accent: #1a56db;
+      --accent-light: #e8f0fe;
+      --warning-bg: #fef2f2;
+      --warning-border: #dc2626;
+      --info-bg: #eff6ff;
+      --info-border: #2563eb;
+      --text: #1f2937;
+      --text-light: #6b7280;
+      --bg: #ffffff;
+      --code-bg: #f8f9fa;
+      --border: #e5e7eb;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --accent: #60a5fa;
+        --accent-light: #1e3a5f;
+        --warning-bg: #2d1b1b;
+        --warning-border: #ef4444;
+        --info-bg: #1e293b;
+        --info-border: #3b82f6;
+        --text: #e5e7eb;
+        --text-light: #9ca3af;
+        --bg: #111827;
+        --code-bg: #1f2937;
+        --border: #374151;
+      }
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      max-width: 52em;
+      margin: 0 auto;
+      padding: 2em 1.5em;
+      line-height: 1.65;
+    }
+    h1, h2, h3 { color: var(--accent); margin-top: 2em; }
+    h1 { font-size: 1.8em; border-bottom: 2px solid var(--accent); padding-bottom: 0.3em; }
+    h2 { font-size: 1.4em; }
+    h3 { font-size: 1.15em; }
+    table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 0.95em; }
+    th, td { border: 1px solid var(--border); padding: 0.5em 0.8em; text-align: left; }
+    th { background: var(--accent-light); font-weight: 600; }
+    pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 1em; overflow-x: auto; font-size: 0.9em; }
+    code { font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace; font-size: 0.9em; }
+    p code { background: var(--code-bg); padding: 0.15em 0.4em; border-radius: 3px; }
+    a { color: var(--accent); }
+    .warning-box {
+      background: var(--warning-bg);
+      border-left: 4px solid var(--warning-border);
+      padding: 1em 1.5em;
+      margin: 1.5em 0;
+      border-radius: 0 6px 6px 0;
+    }
+    .warning-box::before {
+      content: "⚠️ Avertissement";
+      display: block;
+      font-weight: 700;
+      margin-bottom: 0.5em;
+      color: var(--warning-border);
+    }
+    .info-box {
+      background: var(--info-bg);
+      border-left: 4px solid var(--info-border);
+      padding: 1em 1.5em;
+      margin: 1.5em 0;
+      border-radius: 0 6px 6px 0;
+    }
+    .center { text-align: center; margin: 2em 0; }
+    .center a { font-size: 1.1em; }
+    header#title-block-header { text-align: center; margin-bottom: 3em; border-bottom: 2px solid var(--border); padding-bottom: 1.5em; }
+    header#title-block-header h1 { border-bottom: none; font-size: 2em; color: var(--text); }
+    header#title-block-header .subtitle { font-size: 1.2em; color: var(--text-light); margin-top: 0.3em; }
+    header#title-block-header .author { color: var(--accent); font-weight: 600; }
+    header#title-block-header .date { color: var(--text-light); }
+    nav#TOC { background: var(--accent-light); padding: 1.2em 1.5em; border-radius: 8px; margin-bottom: 2em; }
+    nav#TOC ul { list-style: none; padding-left: 1em; }
+    nav#TOC > ul { padding-left: 0; }
+    nav#TOC li { margin: 0.3em 0; }
+    nav#TOC a { text-decoration: none; }
+    .footer-block { margin-top: 3em; padding-top: 1.5em; border-top: 2px solid var(--border); text-align: center; color: var(--text-light); font-size: 0.9em; }
+    @media print {
+      body { max-width: none; font-size: 11pt; }
+      nav#TOC { break-after: page; }
+    }
+  </style>
+  <link rel="stylesheet" href="" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Chiffrement RGPD des bases de données</h1>
+<p class="subtitle">Indices aveugles et trigrammes pour la recherche sur
+données chiffrées</p>
+<p class="author">SINAINSIGHT SAS</p>
+<p class="date">Novembre 2026</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#introduction" id="toc-introduction">1.
+Introduction</a></li>
+<li><a href="#le-problème-chiffrement-vs-recherche"
+id="toc-le-problème-chiffrement-vs-recherche">2. Le problème :
+chiffrement vs recherche</a>
+<ul>
+<li><a href="#chiffrement-classique" id="toc-chiffrement-classique">2.1
+Chiffrement classique</a></li>
+<li><a href="#le-dilemme-des-entreprises"
+id="toc-le-dilemme-des-entreprises">2.2 Le dilemme des
+entreprises</a></li>
+</ul></li>
+<li><a href="#lib_sina_crypt-chiffrement-au-niveau-du-champ"
+id="toc-lib_sina_crypt-chiffrement-au-niveau-du-champ">3. lib_sina_crypt
+: chiffrement au niveau du champ</a>
+<ul>
+<li><a href="#caractéristiques" id="toc-caractéristiques">3.1
+Caractéristiques</a></li>
+<li><a href="#exemple-de-chiffrement-c"
+id="toc-exemple-de-chiffrement-c">3.2 Exemple de chiffrement
+(C)</a></li>
+<li><a href="#exemple-de-chiffrement-go"
+id="toc-exemple-de-chiffrement-go">3.3 Exemple de chiffrement
+(Go)</a></li>
+<li><a href="#exemple-de-chiffrement-python"
+id="toc-exemple-de-chiffrement-python">3.4 Exemple de chiffrement
+(Python)</a></li>
+<li><a
+href="#deux-modes-de-chiffrement-avec-et-sans-protection-anti-rejeu"
+id="toc-deux-modes-de-chiffrement-avec-et-sans-protection-anti-rejeu">3.5
+Deux modes de chiffrement : avec et sans protection anti-rejeu</a></li>
+</ul></li>
+<li><a href="#indices-aveugles-blind-index"
+id="toc-indices-aveugles-blind-index">4. Indices aveugles (Blind
+Index)</a>
+<ul>
+<li><a href="#principe" id="toc-principe">4.1 Principe</a></li>
+<li><a href="#schéma-de-base-de-données"
+id="toc-schéma-de-base-de-données">4.2 Schéma de base de
+données</a></li>
+<li><a href="#insertion-dun-enregistrement"
+id="toc-insertion-dun-enregistrement">4.3 Insertion d’un
+enregistrement</a></li>
+<li><a href="#recherche-par-indice-aveugle"
+id="toc-recherche-par-indice-aveugle">4.4 Recherche par indice
+aveugle</a></li>
+</ul></li>
+<li><a href="#indices-trigrammes-n-gram-index"
+id="toc-indices-trigrammes-n-gram-index">5. Indices trigrammes (N-gram
+Index)</a>
+<ul>
+<li><a href="#principe-1" id="toc-principe-1">5.1 Principe</a></li>
+<li><a href="#schéma-de-base-de-données-1"
+id="toc-schéma-de-base-de-données-1">5.2 Schéma de base de
+données</a></li>
+<li><a href="#génération-des-trigrammes"
+id="toc-génération-des-trigrammes">5.3 Génération des
+trigrammes</a></li>
+<li><a href="#insertion-avec-trigrammes"
+id="toc-insertion-avec-trigrammes">5.4 Insertion avec
+trigrammes</a></li>
+<li><a href="#recherche-partielle-par-trigrammes"
+id="toc-recherche-partielle-par-trigrammes">5.5 Recherche partielle par
+trigrammes</a></li>
+<li><a href="#mongodb-recherche-avec-all"
+id="toc-mongodb-recherche-avec-all">5.6 MongoDB : recherche avec
+<code>$all</code></a></li>
+</ul></li>
+<li><a href="#architecture-de-référence"
+id="toc-architecture-de-référence">6. Architecture de référence</a></li>
+<li><a href="#performances" id="toc-performances">7.
+Performances</a></li>
+<li><a href="#considérations-de-sécurité"
+id="toc-considérations-de-sécurité">8. Considérations de sécurité</a>
+<ul>
+<li><a href="#gestion-des-clés" id="toc-gestion-des-clés">8.1 Gestion
+des clés</a></li>
+<li><a href="#limites-des-indices-aveugles"
+id="toc-limites-des-indices-aveugles">8.2 Limites des indices
+aveugles</a></li>
+<li><a href="#limites-des-trigrammes"
+id="toc-limites-des-trigrammes">8.3 Limites des trigrammes</a></li>
+<li><a href="#version-freemium-vs-production"
+id="toc-version-freemium-vs-production">8.4 Version FreeMium vs
+production</a></li>
+</ul></li>
+<li><a href="#conformité-réglementaire"
+id="toc-conformité-réglementaire">9. Conformité réglementaire</a>
+<ul>
+<li><a href="#rgpd" id="toc-rgpd">9.1 RGPD</a></li>
+<li><a href="#pci-dss" id="toc-pci-dss">9.2 PCI DSS</a></li>
+</ul></li>
+<li><a href="#pour-aller-plus-loin" id="toc-pour-aller-plus-loin">10.
+Pour aller plus loin</a></li>
+</ul>
+</nav>
+<div class="warning-box">
+<p><strong>Version d’évaluation FreeMium (Licence
+FREEMIUM-00001)</strong></p>
+<p>Cette version utilise un CLIENT_NUMBER partagé entre tous les
+utilisateurs FreeMium. Tout utilisateur FreeMium peut déchiffrer les
+données chiffrées par un autre utilisateur FreeMium.</p>
+<p><strong>Usage interne et évaluation uniquement.</strong> Utilisation
+en production à vos risques et périls. SINAINSIGHT SAS décline toute
+responsabilité en cas d’utilisation en production.</p>
+<p>Pour une licence commerciale avec clé client dédiée :
+<code>contact@sinainsight.eu</code></p>
+</div>
+<h1 id="introduction">1. Introduction</h1>
+<p>Le Règlement Général sur la Protection des Données (RGPD) impose aux
+responsables de traitement de mettre en œuvre des mesures techniques
+appropriées pour protéger les données personnelles (Article 32). Le
+chiffrement est explicitement cité comme une mesure de pseudonymisation
+(Article 4, paragraphe 5) et comme une mesure de sécurité
+appropriée.</p>
+<p>Cependant, chiffrer des colonnes en base de données pose un problème
+fondamental : <strong>les données chiffrées ne sont plus
+interrogeables</strong>. Une colonne <code>email</code> chiffrée en
+AES-256-GCM ne peut plus être utilisée dans un
+<code>WHERE email = 'dupont@example.com'</code>, ni dans un
+<code>WHERE email LIKE '%dupont%'</code>.</p>
+<p>Ce document présente une solution complète utilisant
+<strong>lib_sina_crypt</strong>, la bibliothèque de chiffrement au
+niveau du champ de SINAINSIGHT, avec deux techniques qui restaurent la
+capacité de recherche sur données chiffrées :</p>
+<ul>
+<li><strong>Les indices aveugles (blind index)</strong> pour la
+recherche exacte</li>
+<li><strong>Les indices trigrammes (N-gram index)</strong> pour la
+recherche partielle</li>
+</ul>
+<h1 id="le-problème-chiffrement-vs-recherche">2. Le problème :
+chiffrement vs recherche</h1>
+<h2 id="chiffrement-classique">2.1 Chiffrement classique</h2>
+<p>Le chiffrement AES-256-GCM est un chiffrement authentifié : il
+garantit la confidentialité et l’intégrité des données. Chaque opération
+de chiffrement produit un ciphertext différent grâce au nonce (nombre
+utilisé une seule fois).</p>
+<pre><code>Chiffrement(&quot;dupont@example.com&quot;) → &quot;aG9tZSBpbiB0...&quot;  (run 1)
+Chiffrement(&quot;dupont@example.com&quot;) → &quot;bXVzdCBoYXZl...&quot;  (run 2)</code></pre>
+<p><strong>Conséquence</strong> : même valeur en clair → ciphertexts
+différents. Impossible de faire un <code>WHERE</code> ou un index.</p>
+<h2 id="le-dilemme-des-entreprises">2.2 Le dilemme des entreprises</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Approche</th>
+<th style="text-align: center;">Confidentialité</th>
+<th style="text-align: center;">Recherche</th>
+<th style="text-align: center;">Conformité RGPD</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Pas de chiffrement</td>
+<td style="text-align: center;">Non</td>
+<td style="text-align: center;">Oui</td>
+<td style="text-align: center;">Non (Art. 32)</td>
+</tr>
+<tr class="even">
+<td>Chiffrement intégral</td>
+<td style="text-align: center;">Oui</td>
+<td style="text-align: center;">Non</td>
+<td style="text-align: center;">Oui mais inutilisable</td>
+</tr>
+<tr class="odd">
+<td>Chiffrement + blind index</td>
+<td style="text-align: center;">Oui</td>
+<td style="text-align: center;">Exacte</td>
+<td style="text-align: center;">Oui</td>
+</tr>
+<tr class="even">
+<td>Chiffrement + trigrammes</td>
+<td style="text-align: center;">Oui</td>
+<td style="text-align: center;">Partielle</td>
+<td style="text-align: center;">Oui</td>
+</tr>
+</tbody>
+</table>
+<h1 id="lib_sina_crypt-chiffrement-au-niveau-du-champ">3. lib_sina_crypt
+: chiffrement au niveau du champ</h1>
+<h2 id="caractéristiques">3.1 Caractéristiques</h2>
+<p>lib_sina_crypt est une bibliothèque AES-256-GCM avec un nonce
+déterministe strictement monotone, garanti unique et multiplateforme
+(brevet INPI FR2601046).</p>
+<table>
+<thead>
+<tr class="header">
+<th>Propriété</th>
+<th>Valeur</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Algorithme</td>
+<td>AES-256-GCM (chiffrement authentifié)</td>
+</tr>
+<tr class="even">
+<td>Accélération</td>
+<td>AES-NI matérielle</td>
+</tr>
+<tr class="odd">
+<td>Performance</td>
+<td>0,02 ms par champ</td>
+</tr>
+<tr class="even">
+<td>Nonce</td>
+<td>Déterministe, strictement monotone</td>
+</tr>
+<tr class="odd">
+<td>Anti-rejeu</td>
+<td>Détection intégrée</td>
+</tr>
+<tr class="even">
+<td>Bindings</td>
+<td>C, Go, Python, Rust, Node.js</td>
+</tr>
+<tr class="odd">
+<td>Liaison</td>
+<td>Statique (.a / .lib)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="exemple-de-chiffrement-c">3.2 Exemple de chiffrement (C)</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&quot;sina_crypt.h&quot;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">// Chiffrement d&#39;un champ</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="dt">const</span> <span class="dt">char</span> <span class="op">*</span>email <span class="op">=</span> <span class="st">&quot;dupont@example.com&quot;</span><span class="op">;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dt">size_t</span> enc_size <span class="op">=</span> sina_crypt_output_size<span class="op">(</span>strlen<span class="op">(</span>email<span class="op">));</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="dt">char</span> encrypted<span class="op">[</span>enc_size<span class="op">];</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> len <span class="op">=</span> sina_crypt<span class="op">(</span>email<span class="op">,</span> strlen<span class="op">(</span>email<span class="op">),</span> encrypted<span class="op">,</span> enc_size<span class="op">);</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co">// Déchiffrement</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="dt">char</span> decrypted<span class="op">[</span><span class="dv">256</span><span class="op">];</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> dec_len <span class="op">=</span> sina_decrypt<span class="op">(</span>encrypted<span class="op">,</span> len<span class="op">,</span> decrypted<span class="op">,</span> <span class="dv">256</span><span class="op">);</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>decrypted<span class="op">[</span>dec_len<span class="op">]</span> <span class="op">=</span> <span class="ch">&#39;</span><span class="sc">\0</span><span class="ch">&#39;</span><span class="op">;</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co">// decrypted == &quot;dupont@example.com&quot;</span></span></code></pre></div>
+<h2 id="exemple-de-chiffrement-go">3.3 Exemple de chiffrement (Go)</h2>
+<div class="sourceCode" id="cb3"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> sinacrypt <span class="st">&quot;gitlab.com/sina_project_group/lib_sina_crypt/go&quot;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>email <span class="op">:=</span> <span class="op">[]</span><span class="dt">byte</span><span class="op">(</span><span class="st">&quot;dupont@example.com&quot;</span><span class="op">)</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>encrypted<span class="op">,</span> err <span class="op">:=</span> sinacrypt<span class="op">.</span>Crypt<span class="op">(</span>email<span class="op">)</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> err <span class="op">!=</span> <span class="ot">nil</span> <span class="op">{</span> log<span class="op">.</span>Fatal<span class="op">(</span>err<span class="op">)</span> <span class="op">}</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>decrypted<span class="op">,</span> err <span class="op">:=</span> sinacrypt<span class="op">.</span>Decrypt<span class="op">(</span>encrypted<span class="op">)</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> err <span class="op">!=</span> <span class="ot">nil</span> <span class="op">{</span> log<span class="op">.</span>Fatal<span class="op">(</span>err<span class="op">)</span> <span class="op">}</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">// string(decrypted) == &quot;dupont@example.com&quot;</span></span></code></pre></div>
+<h2 id="exemple-de-chiffrement-python">3.4 Exemple de chiffrement
+(Python)</h2>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sina_crypt</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>email <span class="op">=</span> <span class="st">b&quot;dupont@example.com&quot;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>encrypted <span class="op">=</span> sina_crypt.crypt(email)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>decrypted <span class="op">=</span> sina_crypt.decrypt(encrypted)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># decrypted == b&quot;dupont@example.com&quot;</span></span></code></pre></div>
+<h2
+id="deux-modes-de-chiffrement-avec-et-sans-protection-anti-rejeu">3.5
+Deux modes de chiffrement : avec et sans protection anti-rejeu</h2>
+<p>lib_sina_crypt propose deux fonctions de chiffrement qui diffèrent
+par leur traitement de la <strong>protection anti-rejeu</strong> (replay
+protection).</p>
+<h3 id="sina_crypt-avec-protection-anti-rejeu"><code>sina_crypt()</code>
+— avec protection anti-rejeu</h3>
+<p>Chaque message chiffré contient un <strong>UUID unique</strong>. Lors
+du déchiffrement, la bibliothèque vérifie que cet UUID n’a jamais été
+vu. Si le même message chiffré est présenté deux fois, le second
+déchiffrement est <strong>refusé</strong>.</p>
+<p><strong>Usage :</strong> transport réseau (messages Kafka, API calls,
+tokens d’authentification). Empêche un attaquant de rejouer un message
+intercepté.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Chiffrement avec anti-rejeu</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>sina_crypt<span class="op">(</span>buffer<span class="op">,</span> buffer_size<span class="op">,</span> message_len<span class="op">,</span> <span class="op">&amp;</span>output_len<span class="op">);</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">// Premier déchiffrement : OK</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>sina_decrypt<span class="op">(</span>buffer<span class="op">,</span> buffer_size<span class="op">,</span> encrypted_len<span class="op">,</span> <span class="op">&amp;</span>output_len<span class="op">);</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co">// Second déchiffrement du même buffer : ERREUR (rejeu détecté)</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>sina_decrypt<span class="op">(</span>buffer<span class="op">,</span> buffer_size<span class="op">,</span> encrypted_len<span class="op">,</span> <span class="op">&amp;</span>output_len<span class="op">);</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co">// → retourne SINA_CRYPT_ERROR_REPLAY</span></span></code></pre></div>
+<h3
+id="sina_password_crypt-sans-protection-anti-rejeu"><code>sina_password_crypt()</code>
+— sans protection anti-rejeu</h3>
+<p>Le champ UUID est mis à zéro. Le même message chiffré peut être
+déchiffré un nombre illimité de fois. Chaque chiffrement d’une même
+valeur en clair produit un <strong>ciphertext différent</strong> (nonce
+monotone unique), mais tous se déchiffrent correctement.</p>
+<p><strong>Usage :</strong> stockage en base de données (colonnes RGPD
+chiffrées, mots de passe, IBAN, emails). La donnée doit être relue à
+chaque <code>SELECT</code>.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Chiffrement pour stockage persistant</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>sina_password_crypt<span class="op">(</span>buffer<span class="op">,</span> buffer_size<span class="op">,</span> message_len<span class="op">,</span> <span class="op">&amp;</span>output_len<span class="op">);</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">// Lecture 1 : OK</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>sina_decrypt<span class="op">(</span>buffer<span class="op">,</span> buffer_size<span class="op">,</span> encrypted_len<span class="op">,</span> <span class="op">&amp;</span>output_len<span class="op">);</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">// Lecture 2 : OK (pas de détection de rejeu)</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>sina_decrypt<span class="op">(</span>buffer<span class="op">,</span> buffer_size<span class="op">,</span> encrypted_len<span class="op">,</span> <span class="op">&amp;</span>output_len<span class="op">);</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co">// Lecture N : toujours OK</span></span></code></pre></div>
+<h3 id="quel-mode-pour-le-rgpd">Quel mode pour le RGPD ?</h3>
+<p>Pour le chiffrement des bases de données au sens du RGPD,
+<strong>utilisez <code>sina_password_crypt()</code></strong> (ou
+<code>sinacrypt.PasswordCrypt()</code> en Go,
+<code>sina_crypt.password_crypt()</code> en Python).</p>
+<p>La raison est simple : une colonne chiffrée est lue à chaque requête
+<code>SELECT</code>, à chaque affichage, à chaque export. L’anti-rejeu
+bloquerait la seconde lecture.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Critère</th>
+<th style="text-align: center;"><code>sina_crypt()</code></th>
+<th style="text-align: center;"><code>sina_password_crypt()</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Déchiffrement multiple</td>
+<td style="text-align: center;">Non (1 seul)</td>
+<td style="text-align: center;">Oui (illimité)</td>
+</tr>
+<tr class="even">
+<td>UUID unique par message</td>
+<td style="text-align: center;">Oui</td>
+<td style="text-align: center;">Non (zéro)</td>
+</tr>
+<tr class="odd">
+<td>Nonce unique garanti</td>
+<td style="text-align: center;">Oui</td>
+<td style="text-align: center;">Oui</td>
+</tr>
+<tr class="even">
+<td>AES-256-GCM authentifié</td>
+<td style="text-align: center;">Oui</td>
+<td style="text-align: center;">Oui</td>
+</tr>
+<tr class="odd">
+<td><strong>Usage RGPD (BDD)</strong></td>
+<td style="text-align: center;"><strong>Non adapté</strong></td>
+<td style="text-align: center;"><strong>Recommandé</strong></td>
+</tr>
+<tr class="even">
+<td>Usage transport/réseau</td>
+<td style="text-align: center;">Recommandé</td>
+<td style="text-align: center;">Possible mais sans rejeu</td>
+</tr>
+</tbody>
+</table>
+<div class="info-box">
+<p><strong>Note importante :</strong> dans les deux modes, le
+chiffrement est authentifié (AES-256-GCM). Un message altéré ou
+déchiffré avec le mauvais CLIENT_NUMBER provoque une
+<strong>erreur</strong> (vérification du tag d’authentification GCM),
+jamais un déchiffrement partiel ou corrompu. Le buffer est effacé et le
+code d’erreur est retourné.</p>
+</div>
+<p>Pour une meilleure lisibilité dans les projets RGPD, des
+<strong>alias spécialisés</strong> sont disponibles :</p>
+<table>
+<thead>
+<tr class="header">
+<th>Langage</th>
+<th>Chiffrement RGPD</th>
+<th>Déchiffrement RGPD</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>C</td>
+<td><code>sina_rgpd_crypt()</code></td>
+<td><code>sina_rgpd_decrypt()</code></td>
+</tr>
+<tr class="even">
+<td>Go</td>
+<td><code>sinacrypt.RGPDCrypt()</code></td>
+<td><code>sinacrypt.RGPDDecrypt()</code></td>
+</tr>
+<tr class="odd">
+<td>Python</td>
+<td><code>sina_crypt.rgpd_crypt()</code></td>
+<td><code>sina_crypt.rgpd_decrypt()</code></td>
+</tr>
+</tbody>
+</table>
+<p>Ces alias sont strictement équivalents à
+<code>sina_password_crypt()</code> / <code>sina_decrypt()</code> — ils
+améliorent la lisibilité du code sans introduire de différence
+fonctionnelle.</p>
+<p>Tous les exemples de ce document utilisent ces alias RGPD.</p>
+<h1 id="indices-aveugles-blind-index">4. Indices aveugles (Blind
+Index)</h1>
+<h2 id="principe">4.1 Principe</h2>
+<p>Un <strong>indice aveugle</strong> est un hash HMAC-SHA256 du texte
+en clair, calculé avec une clé secrète dédiée aux indices. Il produit
+une empreinte déterministe : même entrée → même hash, ce qui permet
+l’égalité (<code>=</code>) et le <code>JOIN</code>, mais ne révèle pas
+le contenu.</p>
+<pre><code>HMAC-SHA256(&quot;dupont@example.com&quot;, clé_index)
+  → &quot;a3f8c9d1e2b4...&quot;  (toujours le même)</code></pre>
+<p><strong>Propriétés de sécurité</strong> :</p>
+<ul>
+<li>Le HMAC ne peut pas être inversé (fonction à sens unique)</li>
+<li>Sans la clé d’index, l’attaquant ne peut pas pré-calculer les
+hashes</li>
+<li>L’indice révèle uniquement l’égalité : deux lignes avec le même hash
+ont la même valeur en clair, mais la valeur reste inconnue</li>
+</ul>
+<h2 id="schéma-de-base-de-données">4.2 Schéma de base de données</h2>
+<h3 id="postgresql">PostgreSQL</h3>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> clients (</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">id</span>              SERIAL <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">-- Données chiffrées (AES-256-GCM via lib_sina_crypt)</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    email_encrypted TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    nom_encrypted   TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    iban_encrypted  TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">-- Indices aveugles (HMAC-SHA256)</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    email_blind_idx <span class="dt">CHAR</span>(<span class="dv">64</span>) <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    nom_blind_idx   <span class="dt">CHAR</span>(<span class="dv">64</span>) <span class="kw">NOT</span> <span class="kw">NULL</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">INDEX</span> idx_clients_email <span class="kw">ON</span> clients(email_blind_idx);</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">INDEX</span> idx_clients_nom   <span class="kw">ON</span> clients(nom_blind_idx);</span></code></pre></div>
+<h3 id="mongodb">MongoDB</h3>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>db<span class="op">.</span><span class="fu">createCollection</span>(<span class="st">&quot;clients&quot;</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>db<span class="op">.</span><span class="at">clients</span><span class="op">.</span><span class="fu">createIndex</span>({ <span class="st">&quot;email_blind_idx&quot;</span><span class="op">:</span> <span class="dv">1</span> }<span class="op">,</span> { <span class="dt">unique</span><span class="op">:</span> <span class="kw">true</span> })</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>db<span class="op">.</span><span class="at">clients</span><span class="op">.</span><span class="fu">createIndex</span>({ <span class="st">&quot;nom_blind_idx&quot;</span><span class="op">:</span> <span class="dv">1</span> })</span></code></pre></div>
+<h2 id="insertion-dun-enregistrement">4.3 Insertion d’un
+enregistrement</h2>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode go"><code class="sourceCode go"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="op">(</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;crypto/hmac&quot;</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;crypto/sha256&quot;</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;encoding/hex&quot;</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    sinacrypt <span class="st">&quot;gitlab.com/sina_project_group/lib_sina_crypt/go&quot;</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="op">)</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co">// Clé secrète dédiée aux indices aveugles (différente de la clé AES)</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="kw">var</span> blindIndexKey <span class="op">=</span> <span class="op">[]</span><span class="dt">byte</span><span class="op">(</span><span class="st">&quot;votre-cle-index-secrete-32-octets&quot;</span><span class="op">)</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> blindIndex<span class="op">(</span>plaintext <span class="op">[]</span><span class="dt">byte</span><span class="op">)</span> <span class="dt">string</span> <span class="op">{</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    mac <span class="op">:=</span> hmac<span class="op">.</span>New<span class="op">(</span>sha256<span class="op">.</span>New<span class="op">,</span> blindIndexKey<span class="op">)</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    mac<span class="op">.</span>Write<span class="op">(</span>plaintext<span class="op">)</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> hex<span class="op">.</span>EncodeToString<span class="op">(</span>mac<span class="op">.</span>Sum<span class="op">(</span><span class="ot">nil</span><span class="op">))</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> InsertClient<span class="op">(</span>email<span class="op">,</span> nom<span class="op">,</span> iban <span class="dt">string</span><span class="op">)</span> <span class="dt">error</span> <span class="op">{</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Chiffrement des données</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    emailEnc<span class="op">,</span> _ <span class="op">:=</span> sinacrypt<span class="op">.</span>Crypt<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>email<span class="op">))</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    nomEnc<span class="op">,</span> _   <span class="op">:=</span> sinacrypt<span class="op">.</span>Crypt<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>nom<span class="op">))</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    ibanEnc<span class="op">,</span> _  <span class="op">:=</span> sinacrypt<span class="op">.</span>Crypt<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>iban<span class="op">))</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Calcul des indices aveugles</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>    emailIdx <span class="op">:=</span> blindIndex<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>email<span class="op">))</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>    nomIdx   <span class="op">:=</span> blindIndex<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>nom<span class="op">))</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Insertion en base</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>    _<span class="op">,</span> err <span class="op">:=</span> db<span class="op">.</span>Exec<span class="op">(</span><span class="st">`</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a><span class="st">        INSERT INTO clients</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a><span class="st">            (email_encrypted, nom_encrypted, iban_encrypted,</span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a><span class="st">             email_blind_idx, nom_blind_idx)</span></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a><span class="st">        VALUES ($1, $2, $3, $4, $5)`</span><span class="op">,</span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>        emailEnc<span class="op">,</span> nomEnc<span class="op">,</span> ibanEnc<span class="op">,</span> emailIdx<span class="op">,</span> nomIdx<span class="op">)</span></span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> err</span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h2 id="recherche-par-indice-aveugle">4.4 Recherche par indice
+aveugle</h2>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode go"><code class="sourceCode go"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> FindClientByEmail<span class="op">(</span>email <span class="dt">string</span><span class="op">)</span> <span class="op">(*</span>Client<span class="op">,</span> <span class="dt">error</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    idx <span class="op">:=</span> blindIndex<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>email<span class="op">))</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    row <span class="op">:=</span> db<span class="op">.</span>QueryRow<span class="op">(</span><span class="st">`</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="st">        SELECT email_encrypted, nom_encrypted, iban_encrypted</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="st">        FROM clients</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="st">        WHERE email_blind_idx = $1`</span><span class="op">,</span> idx<span class="op">)</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">var</span> emailEnc<span class="op">,</span> nomEnc<span class="op">,</span> ibanEnc <span class="op">[]</span><span class="dt">byte</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">:=</span> row<span class="op">.</span>Scan<span class="op">(&amp;</span>emailEnc<span class="op">,</span> <span class="op">&amp;</span>nomEnc<span class="op">,</span> <span class="op">&amp;</span>ibanEnc<span class="op">);</span> err <span class="op">!=</span> <span class="ot">nil</span> <span class="op">{</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="ot">nil</span><span class="op">,</span> err</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Déchiffrement</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    emailDec<span class="op">,</span> _ <span class="op">:=</span> sinacrypt<span class="op">.</span>Decrypt<span class="op">(</span>emailEnc<span class="op">)</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    nomDec<span class="op">,</span> _   <span class="op">:=</span> sinacrypt<span class="op">.</span>Decrypt<span class="op">(</span>nomEnc<span class="op">)</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    ibanDec<span class="op">,</span> _  <span class="op">:=</span> sinacrypt<span class="op">.</span>Decrypt<span class="op">(</span>ibanEnc<span class="op">)</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">&amp;</span>Client<span class="op">{</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>        Email<span class="op">:</span> <span class="dt">string</span><span class="op">(</span>emailDec<span class="op">),</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>        Nom<span class="op">:</span>   <span class="dt">string</span><span class="op">(</span>nomDec<span class="op">),</span></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>        IBAN<span class="op">:</span>  <span class="dt">string</span><span class="op">(</span>ibanDec<span class="op">),</span></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span> <span class="ot">nil</span></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p><strong>Performances</strong> : la recherche utilise l’index B-tree
+standard de la base de données. Le temps de recherche est identique à
+une recherche sur colonne non chiffrée, plus le temps de déchiffrement
+(0,02 ms par champ).</p>
+<h1 id="indices-trigrammes-n-gram-index">5. Indices trigrammes (N-gram
+Index)</h1>
+<h2 id="principe-1">5.1 Principe</h2>
+<p>Les indices aveugles ne supportent que l’égalité exacte. Pour une
+recherche partielle (<code>LIKE '%dupont%'</code>), on utilise des
+<strong>indices trigrammes</strong> : le texte en clair est découpé en
+sous-chaînes de 3 caractères (trigrammes), et chaque trigramme est hashé
+individuellement.</p>
+<pre><code>&quot;dupont&quot; → {&quot;dup&quot;, &quot;upo&quot;, &quot;pon&quot;, &quot;ont&quot;}
+         → {HMAC(&quot;dup&quot;), HMAC(&quot;upo&quot;), HMAC(&quot;pon&quot;), HMAC(&quot;ont&quot;)}</code></pre>
+<p>Pour rechercher <code>"pont"</code>, on calcule les trigrammes de la
+requête (<code>{"pon", "ont"}</code>) et on cherche les lignes qui
+contiennent <strong>tous</strong> ces trigrammes.</p>
+<h2 id="schéma-de-base-de-données-1">5.2 Schéma de base de données</h2>
+<h3 id="postgresql-avec-table-de-trigrammes">PostgreSQL avec table de
+trigrammes</h3>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Table principale</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> clients (</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">id</span>              SERIAL <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    nom_encrypted   TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    email_encrypted TEXT <span class="kw">NOT</span> <span class="kw">NULL</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">-- Table des trigrammes</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> client_trigrams (</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    client_id   <span class="dt">INTEGER</span> <span class="kw">REFERENCES</span> clients(<span class="kw">id</span>) <span class="kw">ON</span> <span class="kw">DELETE</span> <span class="kw">CASCADE</span>,</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    field_name  <span class="dt">VARCHAR</span>(<span class="dv">32</span>) <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    trigram_idx <span class="dt">CHAR</span>(<span class="dv">64</span>) <span class="kw">NOT</span> <span class="kw">NULL</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">INDEX</span> idx_trigrams <span class="kw">ON</span> client_trigrams(field_name, trigram_idx);</span></code></pre></div>
+<h3 id="mongodb-avec-tableau-embarqué">MongoDB avec tableau
+embarqué</h3>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Document client</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">_id</span><span class="op">:</span> <span class="fu">ObjectId</span>(<span class="st">&quot;...&quot;</span>)<span class="op">,</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">nom_encrypted</span><span class="op">:</span> <span class="st">&quot;aG9tZSBp...&quot;</span><span class="op">,</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">email_encrypted</span><span class="op">:</span> <span class="st">&quot;bXVzdCBo...&quot;</span><span class="op">,</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">nom_trigrams</span><span class="op">:</span> [</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;a3f8c9d1...&quot;</span><span class="op">,</span>  <span class="co">// HMAC(&quot;dup&quot;)</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;b2e7d0c3...&quot;</span><span class="op">,</span>  <span class="co">// HMAC(&quot;upo&quot;)</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;c1d6e4f5...&quot;</span><span class="op">,</span>  <span class="co">// HMAC(&quot;pon&quot;)</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;d0c5f3e2...&quot;</span>   <span class="co">// HMAC(&quot;ont&quot;)</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>db<span class="op">.</span><span class="at">clients</span><span class="op">.</span><span class="fu">createIndex</span>({ <span class="st">&quot;nom_trigrams&quot;</span><span class="op">:</span> <span class="dv">1</span> })</span></code></pre></div>
+<h2 id="génération-des-trigrammes">5.3 Génération des trigrammes</h2>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode go"><code class="sourceCode go"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> trigrams<span class="op">(</span>s <span class="dt">string</span><span class="op">)</span> <span class="op">[]</span><span class="dt">string</span> <span class="op">{</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> strings<span class="op">.</span>ToLower<span class="op">(</span>s<span class="op">)</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">len</span><span class="op">(</span>s<span class="op">)</span> <span class="op">&lt;</span> <span class="dv">3</span> <span class="op">{</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="op">[]</span><span class="dt">string</span><span class="op">{</span>s<span class="op">}</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    result <span class="op">:=</span> <span class="bu">make</span><span class="op">([]</span><span class="dt">string</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="bu">len</span><span class="op">(</span>s<span class="op">)-</span><span class="dv">2</span><span class="op">)</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="op">:=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;=</span> <span class="bu">len</span><span class="op">(</span>s<span class="op">)-</span><span class="dv">3</span><span class="op">;</span> i<span class="op">++</span> <span class="op">{</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> <span class="bu">append</span><span class="op">(</span>result<span class="op">,</span> s<span class="op">[</span>i<span class="op">:</span>i<span class="op">+</span><span class="dv">3</span><span class="op">])</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> trigramIndices<span class="op">(</span>plaintext <span class="dt">string</span><span class="op">)</span> <span class="op">[]</span><span class="dt">string</span> <span class="op">{</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    tris <span class="op">:=</span> trigrams<span class="op">(</span>plaintext<span class="op">)</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    indices <span class="op">:=</span> <span class="bu">make</span><span class="op">([]</span><span class="dt">string</span><span class="op">,</span> <span class="bu">len</span><span class="op">(</span>tris<span class="op">))</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i<span class="op">,</span> tri <span class="op">:=</span> <span class="kw">range</span> tris <span class="op">{</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>        mac <span class="op">:=</span> hmac<span class="op">.</span>New<span class="op">(</span>sha256<span class="op">.</span>New<span class="op">,</span> blindIndexKey<span class="op">)</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>        mac<span class="op">.</span>Write<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>tri<span class="op">))</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>        indices<span class="op">[</span>i<span class="op">]</span> <span class="op">=</span> hex<span class="op">.</span>EncodeToString<span class="op">(</span>mac<span class="op">.</span>Sum<span class="op">(</span><span class="ot">nil</span><span class="op">))</span></span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> indices</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h2 id="insertion-avec-trigrammes">5.4 Insertion avec trigrammes</h2>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode go"><code class="sourceCode go"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> InsertClientWithTrigrams<span class="op">(</span>nom<span class="op">,</span> email <span class="dt">string</span><span class="op">)</span> <span class="dt">error</span> <span class="op">{</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    nomEnc<span class="op">,</span> _   <span class="op">:=</span> sinacrypt<span class="op">.</span>Crypt<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>nom<span class="op">))</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    emailEnc<span class="op">,</span> _ <span class="op">:=</span> sinacrypt<span class="op">.</span>Crypt<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>email<span class="op">))</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Trigrammes du nom</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    nomTrigrams <span class="op">:=</span> trigramIndices<span class="op">(</span>nom<span class="op">)</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">// PostgreSQL : insertion + trigrammes</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    tx<span class="op">,</span> _ <span class="op">:=</span> db<span class="op">.</span>Begin<span class="op">()</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">var</span> id <span class="dt">int</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    tx<span class="op">.</span>QueryRow<span class="op">(</span><span class="st">`INSERT INTO clients (nom_encrypted, email_encrypted)</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="st">                 VALUES ($1, $2) RETURNING id`</span><span class="op">,</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>                 nomEnc<span class="op">,</span> emailEnc<span class="op">).</span>Scan<span class="op">(&amp;</span>id<span class="op">)</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _<span class="op">,</span> tri <span class="op">:=</span> <span class="kw">range</span> nomTrigrams <span class="op">{</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>        tx<span class="op">.</span>Exec<span class="op">(</span><span class="st">`INSERT INTO client_trigrams</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a><span class="st">                 (client_id, field_name, trigram_idx)</span></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a><span class="st">                 VALUES ($1, &#39;nom&#39;, $2)`</span><span class="op">,</span> id<span class="op">,</span> tri<span class="op">)</span></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> tx<span class="op">.</span>Commit<span class="op">()</span></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h2 id="recherche-partielle-par-trigrammes">5.5 Recherche partielle par
+trigrammes</h2>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode go"><code class="sourceCode go"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> SearchClientsByName<span class="op">(</span>query <span class="dt">string</span><span class="op">)</span> <span class="op">([]</span>Client<span class="op">,</span> <span class="dt">error</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    queryTrigrams <span class="op">:=</span> trigramIndices<span class="op">(</span>query<span class="op">)</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">len</span><span class="op">(</span>queryTrigrams<span class="op">)</span> <span class="op">==</span> <span class="dv">0</span> <span class="op">{</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="ot">nil</span><span class="op">,</span> fmt<span class="op">.</span>Errorf<span class="op">(</span><span class="st">&quot;requete trop courte&quot;</span><span class="op">)</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Construire la requête : tous les trigrammes doivent matcher</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">// (intersection des ensembles)</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>    sqlQuery <span class="op">:=</span> <span class="st">`</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="st">        SELECT c.nom_encrypted, c.email_encrypted</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="st">        FROM clients c</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a><span class="st">        WHERE c.id IN (</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="st">            SELECT client_id</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a><span class="st">            FROM client_trigrams</span></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a><span class="st">            WHERE field_name = &#39;nom&#39;</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a><span class="st">              AND trigram_idx = ANY($1)</span></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a><span class="st">            GROUP BY client_id</span></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a><span class="st">            HAVING COUNT(DISTINCT trigram_idx) = $2</span></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a><span class="st">        )`</span></span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>    rows<span class="op">,</span> err <span class="op">:=</span> db<span class="op">.</span>Query<span class="op">(</span>sqlQuery<span class="op">,</span> pq<span class="op">.</span>Array<span class="op">(</span>queryTrigrams<span class="op">),</span></span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>                          <span class="bu">len</span><span class="op">(</span>queryTrigrams<span class="op">))</span></span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="ot">nil</span> <span class="op">{</span> <span class="cf">return</span> <span class="ot">nil</span><span class="op">,</span> err <span class="op">}</span></span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">defer</span> rows<span class="op">.</span>Close<span class="op">()</span></span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>    <span class="kw">var</span> results <span class="op">[]</span>Client</span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> rows<span class="op">.</span>Next<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>        <span class="kw">var</span> nomEnc<span class="op">,</span> emailEnc <span class="op">[]</span><span class="dt">byte</span></span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>        rows<span class="op">.</span>Scan<span class="op">(&amp;</span>nomEnc<span class="op">,</span> <span class="op">&amp;</span>emailEnc<span class="op">)</span></span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>        nomDec<span class="op">,</span> _   <span class="op">:=</span> sinacrypt<span class="op">.</span>Decrypt<span class="op">(</span>nomEnc<span class="op">)</span></span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>        emailDec<span class="op">,</span> _ <span class="op">:=</span> sinacrypt<span class="op">.</span>Decrypt<span class="op">(</span>emailEnc<span class="op">)</span></span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a>        results <span class="op">=</span> <span class="bu">append</span><span class="op">(</span>results<span class="op">,</span> Client<span class="op">{</span></span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a>            Nom<span class="op">:</span>   <span class="dt">string</span><span class="op">(</span>nomDec<span class="op">),</span></span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a>            Email<span class="op">:</span> <span class="dt">string</span><span class="op">(</span>emailDec<span class="op">),</span></span>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a>        <span class="op">})</span></span>
+<span id="cb17-36"><a href="#cb17-36" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb17-37"><a href="#cb17-37" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> results<span class="op">,</span> <span class="ot">nil</span></span>
+<span id="cb17-38"><a href="#cb17-38" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p><strong>Exemple</strong> :</p>
+<pre><code>Recherche &quot;pont&quot; sur le champ nom :
+  &quot;pont&quot; → trigrammes : {&quot;pon&quot;, &quot;ont&quot;}
+  → HMAC(&quot;pon&quot;) = &quot;c1d6e4f5...&quot;
+  → HMAC(&quot;ont&quot;) = &quot;d0c5f3e2...&quot;
+  → SELECT WHERE trigram_idx IN (...) HAVING COUNT = 2
+  → Trouve : &quot;Dupont&quot;, &quot;Dupont-Martin&quot;, &quot;Pontoise&quot;</code></pre>
+<h2 id="mongodb-recherche-avec-all">5.6 MongoDB : recherche avec
+<code>$all</code></h2>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Recherche &quot;pont&quot; dans les noms</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="kw">var</span> queryTrigrams <span class="op">=</span> <span class="fu">trigramIndices</span>(<span class="st">&quot;pont&quot;</span>)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>db<span class="op">.</span><span class="at">clients</span><span class="op">.</span><span class="fu">find</span>({</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">nom_trigrams</span><span class="op">:</span> { <span class="dt">$all</span><span class="op">:</span> queryTrigrams }</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div>
+<h1 id="architecture-de-référence">6. Architecture de référence</h1>
+<pre><code>┌─────────────────────────────────────────────────┐
+│                  Application                     │
+│                                                  │
+│  ┌──────────────┐  ┌──────────────────────────┐ │
+│  │ lib_sina_crypt│  │  Module d&#39;indexation      │ │
+│  │              │  │                           │ │
+│  │ sina_crypt() │  │ blindIndex()              │ │
+│  │ sina_decrypt()│  │ trigramIndices()          │ │
+│  └──────┬───────┘  └────────────┬─────────────┘ │
+│         │                       │                │
+└─────────┼───────────────────────┼────────────────┘
+          │                       │
+          ▼                       ▼
+┌─────────────────────────────────────────────────┐
+│              Base de données                     │
+│                                                  │
+│  ┌────────────────┐  ┌───────────────────────┐  │
+│  │ Colonnes        │  │ Colonnes d&#39;index      │  │
+│  │ chiffrées       │  │                       │  │
+│  │                 │  │ email_blind_idx       │  │
+│  │ email_encrypted │  │ nom_blind_idx         │  │
+│  │ nom_encrypted   │  │ nom_trigrams[]        │  │
+│  │ iban_encrypted  │  │                       │  │
+│  └─────────────────┘  └───────────────────────┘  │
+│                                                  │
+└──────────────────────────────────────────────────┘</code></pre>
+<p><strong>Flux d’écriture</strong> :</p>
+<ol type="1">
+<li>L’application reçoit les données en clair</li>
+<li><code>sina_crypt()</code> chiffre chaque champ sensible</li>
+<li><code>blindIndex()</code> calcule le hash HMAC de chaque champ
+indexé</li>
+<li><code>trigramIndices()</code> calcule les trigrammes hashés des
+champs nécessitant la recherche partielle</li>
+<li>Les données chiffrées et les indices sont insérés en base</li>
+</ol>
+<p><strong>Flux de lecture</strong> :</p>
+<ol type="1">
+<li>L’application calcule l’indice de la requête (blind ou
+trigrammes)</li>
+<li>La base de données retourne les lignes correspondantes</li>
+<li><code>sina_decrypt()</code> déchiffre les champs nécessaires</li>
+</ol>
+<h1 id="performances">7. Performances</h1>
+<table>
+<thead>
+<tr class="header">
+<th>Opération</th>
+<th>Temps</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>sina_crypt()</code> — 1 champ</td>
+<td>0,02 ms</td>
+<td>AES-NI</td>
+</tr>
+<tr class="even">
+<td><code>sina_decrypt()</code> — 1 champ</td>
+<td>0,02 ms</td>
+<td>AES-NI</td>
+</tr>
+<tr class="odd">
+<td>Batch 1 000 champs</td>
+<td>~20 ms</td>
+<td><code>sina_crypt_batch_encrypt()</code></td>
+</tr>
+<tr class="even">
+<td><code>blindIndex()</code> — 1 champ</td>
+<td>0,003 ms</td>
+<td>HMAC-SHA256</td>
+</tr>
+<tr class="odd">
+<td><code>trigramIndices()</code> — mot 10 car.</td>
+<td>0,03 ms</td>
+<td>8 trigrammes × HMAC</td>
+</tr>
+<tr class="even">
+<td>Recherche blind index (PostgreSQL)</td>
+<td>&lt;1 ms</td>
+<td>Index B-tree standard</td>
+</tr>
+<tr class="odd">
+<td>Recherche trigrammes (PostgreSQL)</td>
+<td>1–5 ms</td>
+<td>Selon cardinalité</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Surcoût total par opération</strong> : le chiffrement au
+niveau du champ ajoute environ 0,05 ms par champ en écriture et 0,02 ms
+en lecture. Ce surcoût est négligeable par rapport au temps réseau et
+disque d’une requête SQL typique (1–10 ms).</p>
+<h1 id="considérations-de-sécurité">8. Considérations de sécurité</h1>
+<h2 id="gestion-des-clés">8.1 Gestion des clés</h2>
+<ul>
+<li><strong>Clé AES</strong> : intégrée à
+<code>libsina_crypt_obf.a</code>, obfusquée. En production (licence
+commerciale), chaque client a un CLIENT_NUMBER unique qui dérive une clé
+AES différente.</li>
+<li><strong>Clé d’index</strong> : clé HMAC-SHA256 séparée, à stocker
+dans un gestionnaire de secrets (Vault, AWS KMS, etc.).</li>
+<li>Les deux clés sont indépendantes : compromettre la clé d’index ne
+compromet pas le chiffrement.</li>
+</ul>
+<h2 id="limites-des-indices-aveugles">8.2 Limites des indices
+aveugles</h2>
+<ul>
+<li><strong>Recherche exacte uniquement</strong> : impossible de faire
+<code>LIKE</code>, <code>&gt;</code>, <code>&lt;</code> ou
+<code>BETWEEN</code> sur un blind index.</li>
+<li><strong>Fuite d’égalité</strong> : un attaquant avec accès à la base
+voit quelles lignes ont la même valeur (même hash). C’est inhérent à
+tout schéma de recherche déterministe.</li>
+<li><strong>Pas de tri</strong> : les indices ne préservent pas
+l’ordre.</li>
+</ul>
+<h2 id="limites-des-trigrammes">8.3 Limites des trigrammes</h2>
+<ul>
+<li><strong>Faux positifs</strong> : la recherche par trigrammes peut
+retourner des résultats non pertinents (mêmes trigrammes, contexte
+différent). Un filtrage post-déchiffrement est recommandé.</li>
+<li><strong>Stockage supplémentaire</strong> : chaque champ indexé par
+trigrammes génère <code>len(texte) - 2</code> hashes de 64
+caractères.</li>
+<li><strong>Requête minimale 3 caractères</strong> : les recherches de
+moins de 3 caractères ne sont pas supportées.</li>
+</ul>
+<h2 id="version-freemium-vs-production">8.4 Version FreeMium vs
+production</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Aspect</th>
+<th style="text-align: center;">FreeMium (FREEMIUM-00001)</th>
+<th style="text-align: center;">Licence commerciale</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>CLIENT_NUMBER</td>
+<td style="text-align: center;">1 (partagé)</td>
+<td style="text-align: center;">Unique et dédié</td>
+</tr>
+<tr class="even">
+<td>Isolation crypto</td>
+<td style="text-align: center;">Non</td>
+<td style="text-align: center;">Oui</td>
+</tr>
+<tr class="odd">
+<td>Interopérabilité</td>
+<td style="text-align: center;">Avec tous les FreeMium</td>
+<td style="text-align: center;">Avec vos apps uniquement</td>
+</tr>
+<tr class="even">
+<td>Support</td>
+<td style="text-align: center;">Aucun</td>
+<td style="text-align: center;">Inclus</td>
+</tr>
+<tr class="odd">
+<td>Production</td>
+<td style="text-align: center;">Non recommandé</td>
+<td style="text-align: center;">Oui</td>
+</tr>
+</tbody>
+</table>
+<h1 id="conformité-réglementaire">9. Conformité réglementaire</h1>
+<h2 id="rgpd">9.1 RGPD</h2>
+<ul>
+<li><strong>Article 32</strong> : le chiffrement est une mesure
+technique appropriée. lib_sina_crypt utilise AES-256-GCM, recommandé par
+l’ANSSI.</li>
+<li><strong>Article 4(5)</strong> : les indices aveugles constituent une
+forme de pseudonymisation — les données ne sont plus directement
+identifiantes sans la clé de déchiffrement.</li>
+<li><strong>Article 34</strong> : en cas de violation de données, les
+données chiffrées ne sont pas considérées comme compromises si la clé
+n’est pas affectée.</li>
+</ul>
+<h2 id="pci-dss">9.2 PCI DSS</h2>
+<ul>
+<li><strong>Exigence 3.4</strong> : les numéros de carte (PAN) doivent
+être rendus illisibles. Le chiffrement au niveau du champ avec
+lib_sina_crypt satisfait cette exigence.</li>
+<li><strong>Exigence 3.5</strong> : les clés de chiffrement doivent être
+protégées. La clé AES est obfusquée dans la bibliothèque statique et
+dérivée du CLIENT_NUMBER.</li>
+</ul>
+<h1 id="pour-aller-plus-loin">10. Pour aller plus loin</h1>
+<p>Cette version FreeMium vous permet d’évaluer lib_sina_crypt dans
+votre environnement : performances, compatibilité, intégration avec
+votre stack technique.</p>
+<p>Pour passer en production avec une <strong>clé client dédiée</strong>
+garantissant l’isolation cryptographique :</p>
+<div class="center">
+<p><strong>contact@sinainsight.eu</strong></p>
+<p>+33 7 45 10 78 64</p>
+<p><a
+href="https://www.sinainsight.pro/produits/lib-sina-crypt">https://www.sinainsight.pro/produits/lib-sina-crypt</a></p>
+</div>
+<div class="info-box">
+<p><strong>SINAINSIGHT SAS</strong> — RCS Paris 100 212 802</p>
+<p>10 Villa d’Este, 75013 Paris, France</p>
+<p>lib_sina_crypt est protégé par le brevet enregistré INPI
+FR2601046.</p>
+<p>Copyright © 2024–2026 SINAINSIGHT SAS. Tous droits réservés.</p>
+</div>
+<div class="footer-block">
+<p><a href="https://github.com/sinainsight/lib-sina-crypt/releases/download/v2.1.0-freemium/lib_sina_crypt-chiffrement-rgpd-bases-de-donnees.pdf">📄 Télécharger en PDF</a>
+ · <a href="https://github.com/sinainsight/lib-sina-crypt/releases/tag/v2.1.0-freemium">📦 Télécharger FreeMium</a>
+ · <a href="https://www.sinainsight.pro">sinainsight.pro</a></p>
+</div>
+</body>
+</html>
