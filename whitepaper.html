@@ -173,7 +173,6 @@
       nav#TOC { break-after: page; }
     }
   </style>
-  <link rel="stylesheet" href="" />
 </head>
 <body>
 <header id="title-block-header">
@@ -203,15 +202,15 @@ id="toc-lib_sina_crypt-chiffrement-au-niveau-du-champ">3. lib_sina_crypt
 <ul>
 <li><a href="#caractéristiques" id="toc-caractéristiques">3.1
 Caractéristiques</a></li>
-<li><a href="#exemple-de-chiffrement-c"
-id="toc-exemple-de-chiffrement-c">3.2 Exemple de chiffrement
+<li><a href="#exemple-de-chiffrement-rgpd-c"
+id="toc-exemple-de-chiffrement-rgpd-c">3.2 Exemple de chiffrement RGPD
 (C)</a></li>
-<li><a href="#exemple-de-chiffrement-go"
-id="toc-exemple-de-chiffrement-go">3.3 Exemple de chiffrement
+<li><a href="#exemple-de-chiffrement-rgpd-go"
+id="toc-exemple-de-chiffrement-rgpd-go">3.3 Exemple de chiffrement RGPD
 (Go)</a></li>
-<li><a href="#exemple-de-chiffrement-python"
-id="toc-exemple-de-chiffrement-python">3.4 Exemple de chiffrement
-(Python)</a></li>
+<li><a href="#exemple-de-chiffrement-rgpd-python"
+id="toc-exemple-de-chiffrement-rgpd-python">3.4 Exemple de chiffrement
+RGPD (Python)</a></li>
 <li><a
 href="#deux-modes-de-chiffrement-avec-et-sans-protection-anti-rejeu"
 id="toc-deux-modes-de-chiffrement-avec-et-sans-protection-anti-rejeu">3.5
@@ -408,38 +407,42 @@ déterministe strictement monotone, garanti unique et multiplateforme
 </tr>
 </tbody>
 </table>
-<h2 id="exemple-de-chiffrement-c">3.2 Exemple de chiffrement (C)</h2>
+<h2 id="exemple-de-chiffrement-rgpd-c">3.2 Exemple de chiffrement RGPD
+(C)</h2>
 <div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&quot;sina_crypt.h&quot;</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">// Chiffrement d&#39;un champ</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">// Chiffrement d&#39;un champ RGPD pour stockage en base</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="dt">const</span> <span class="dt">char</span> <span class="op">*</span>email <span class="op">=</span> <span class="st">&quot;dupont@example.com&quot;</span><span class="op">;</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dt">size_t</span> enc_size <span class="op">=</span> sina_crypt_output_size<span class="op">(</span>strlen<span class="op">(</span>email<span class="op">));</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="dt">char</span> encrypted<span class="op">[</span>enc_size<span class="op">];</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> len <span class="op">=</span> sina_crypt<span class="op">(</span>email<span class="op">,</span> strlen<span class="op">(</span>email<span class="op">),</span> encrypted<span class="op">,</span> enc_size<span class="op">);</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co">// Déchiffrement</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="dt">char</span> decrypted<span class="op">[</span><span class="dv">256</span><span class="op">];</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> dec_len <span class="op">=</span> sina_decrypt<span class="op">(</span>encrypted<span class="op">,</span> len<span class="op">,</span> decrypted<span class="op">,</span> <span class="dv">256</span><span class="op">);</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>decrypted<span class="op">[</span>dec_len<span class="op">]</span> <span class="op">=</span> <span class="ch">&#39;</span><span class="sc">\0</span><span class="ch">&#39;</span><span class="op">;</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co">// decrypted == &quot;dupont@example.com&quot;</span></span></code></pre></div>
-<h2 id="exemple-de-chiffrement-go">3.3 Exemple de chiffrement (Go)</h2>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dt">size_t</span> msg_len <span class="op">=</span> strlen<span class="op">(</span>email<span class="op">);</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="dt">uint8_t</span> buffer<span class="op">[</span><span class="dv">4096</span><span class="op">];</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="dt">size_t</span> output_len<span class="op">;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>memcpy<span class="op">(</span>buffer<span class="op">,</span> email<span class="op">,</span> msg_len<span class="op">);</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>sina_rgpd_crypt<span class="op">(</span>buffer<span class="op">,</span> <span class="kw">sizeof</span><span class="op">(</span>buffer<span class="op">),</span> msg_len<span class="op">,</span> <span class="op">&amp;</span>output_len<span class="op">);</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">// Déchiffrement (illimité, pas d&#39;anti-rejeu)</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="dt">size_t</span> dec_len<span class="op">;</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>sina_rgpd_decrypt<span class="op">(</span>buffer<span class="op">,</span> <span class="kw">sizeof</span><span class="op">(</span>buffer<span class="op">),</span> output_len<span class="op">,</span> <span class="op">&amp;</span>dec_len<span class="op">);</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>buffer<span class="op">[</span>dec_len<span class="op">]</span> <span class="op">=</span> <span class="ch">&#39;</span><span class="sc">\0</span><span class="ch">&#39;</span><span class="op">;</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co">// buffer == &quot;dupont@example.com&quot;</span></span></code></pre></div>
+<h2 id="exemple-de-chiffrement-rgpd-go">3.3 Exemple de chiffrement RGPD
+(Go)</h2>
 <div class="sourceCode" id="cb3"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> sinacrypt <span class="st">&quot;gitlab.com/sina_project_group/lib_sina_crypt/go&quot;</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>email <span class="op">:=</span> <span class="op">[]</span><span class="dt">byte</span><span class="op">(</span><span class="st">&quot;dupont@example.com&quot;</span><span class="op">)</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>encrypted<span class="op">,</span> err <span class="op">:=</span> sinacrypt<span class="op">.</span>Crypt<span class="op">(</span>email<span class="op">)</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>encrypted<span class="op">,</span> err <span class="op">:=</span> sinacrypt<span class="op">.</span>RGPDCrypt<span class="op">(</span>email<span class="op">)</span></span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> err <span class="op">!=</span> <span class="ot">nil</span> <span class="op">{</span> log<span class="op">.</span>Fatal<span class="op">(</span>err<span class="op">)</span> <span class="op">}</span></span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>decrypted<span class="op">,</span> err <span class="op">:=</span> sinacrypt<span class="op">.</span>Decrypt<span class="op">(</span>encrypted<span class="op">)</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>decrypted<span class="op">,</span> err <span class="op">:=</span> sinacrypt<span class="op">.</span>RGPDDecrypt<span class="op">(</span>encrypted<span class="op">)</span></span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> err <span class="op">!=</span> <span class="ot">nil</span> <span class="op">{</span> log<span class="op">.</span>Fatal<span class="op">(</span>err<span class="op">)</span> <span class="op">}</span></span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">// string(decrypted) == &quot;dupont@example.com&quot;</span></span></code></pre></div>
-<h2 id="exemple-de-chiffrement-python">3.4 Exemple de chiffrement
-(Python)</h2>
+<h2 id="exemple-de-chiffrement-rgpd-python">3.4 Exemple de chiffrement
+RGPD (Python)</h2>
 <div class="sourceCode" id="cb4"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sina_crypt</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>email <span class="op">=</span> <span class="st">b&quot;dupont@example.com&quot;</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>encrypted <span class="op">=</span> sina_crypt.crypt(email)</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>decrypted <span class="op">=</span> sina_crypt.decrypt(encrypted)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>encrypted <span class="op">=</span> sina_crypt.rgpd_crypt(email)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>decrypted <span class="op">=</span> sina_crypt.rgpd_decrypt(encrypted)</span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># decrypted == b&quot;dupont@example.com&quot;</span></span></code></pre></div>
 <h2
 id="deux-modes-de-chiffrement-avec-et-sans-protection-anti-rejeu">3.5
@@ -487,9 +490,9 @@ chaque <code>SELECT</code>.</p>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co">// Lecture N : toujours OK</span></span></code></pre></div>
 <h3 id="quel-mode-pour-le-rgpd">Quel mode pour le RGPD ?</h3>
 <p>Pour le chiffrement des bases de données au sens du RGPD,
-<strong>utilisez <code>sina_password_crypt()</code></strong> (ou
-<code>sinacrypt.PasswordCrypt()</code> en Go,
-<code>sina_crypt.password_crypt()</code> en Python).</p>
+<strong>utilisez les alias RGPD</strong> :
+<code>sina_rgpd_crypt()</code> en C, <code>sinacrypt.RGPDCrypt()</code>
+en Go, <code>sina_crypt.rgpd_crypt()</code> en Python.</p>
 <p>La raison est simple : une colonne chiffrée est lue à chaque requête
 <code>SELECT</code>, à chaque affichage, à chaque export. L’anti-rejeu
 bloquerait la seconde lecture.</p>
@@ -636,9 +639,9 @@ class="sourceCode go"><code class="sourceCode go"><span id="cb10-1"><a href="#cb
 <span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> InsertClient<span class="op">(</span>email<span class="op">,</span> nom<span class="op">,</span> iban <span class="dt">string</span><span class="op">)</span> <span class="dt">error</span> <span class="op">{</span></span>
 <span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Chiffrement des données</span></span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    emailEnc<span class="op">,</span> _ <span class="op">:=</span> sinacrypt<span class="op">.</span>Crypt<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>email<span class="op">))</span></span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    nomEnc<span class="op">,</span> _   <span class="op">:=</span> sinacrypt<span class="op">.</span>Crypt<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>nom<span class="op">))</span></span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    ibanEnc<span class="op">,</span> _  <span class="op">:=</span> sinacrypt<span class="op">.</span>Crypt<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>iban<span class="op">))</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    emailEnc<span class="op">,</span> _ <span class="op">:=</span> sinacrypt<span class="op">.</span>RGPDCrypt<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>email<span class="op">))</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    nomEnc<span class="op">,</span> _   <span class="op">:=</span> sinacrypt<span class="op">.</span>RGPDCrypt<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>nom<span class="op">))</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    ibanEnc<span class="op">,</span> _  <span class="op">:=</span> sinacrypt<span class="op">.</span>RGPDCrypt<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>iban<span class="op">))</span></span>
 <span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Calcul des indices aveugles</span></span>
 <span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>    emailIdx <span class="op">:=</span> blindIndex<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>email<span class="op">))</span></span>
@@ -670,9 +673,9 @@ class="sourceCode go"><code class="sourceCode go"><span id="cb11-1"><a href="#cb
 <span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
 <span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Déchiffrement</span></span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    emailDec<span class="op">,</span> _ <span class="op">:=</span> sinacrypt<span class="op">.</span>Decrypt<span class="op">(</span>emailEnc<span class="op">)</span></span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    nomDec<span class="op">,</span> _   <span class="op">:=</span> sinacrypt<span class="op">.</span>Decrypt<span class="op">(</span>nomEnc<span class="op">)</span></span>
-<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    ibanDec<span class="op">,</span> _  <span class="op">:=</span> sinacrypt<span class="op">.</span>Decrypt<span class="op">(</span>ibanEnc<span class="op">)</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    emailDec<span class="op">,</span> _ <span class="op">:=</span> sinacrypt<span class="op">.</span>RGPDDecrypt<span class="op">(</span>emailEnc<span class="op">)</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    nomDec<span class="op">,</span> _   <span class="op">:=</span> sinacrypt<span class="op">.</span>RGPDDecrypt<span class="op">(</span>nomEnc<span class="op">)</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    ibanDec<span class="op">,</span> _  <span class="op">:=</span> sinacrypt<span class="op">.</span>RGPDDecrypt<span class="op">(</span>ibanEnc<span class="op">)</span></span>
 <span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">&amp;</span>Client<span class="op">{</span></span>
 <span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>        Email<span class="op">:</span> <span class="dt">string</span><span class="op">(</span>emailDec<span class="op">),</span></span>
@@ -760,8 +763,8 @@ class="sourceCode go"><code class="sourceCode go"><span id="cb15-1"><a href="#cb
 <h2 id="insertion-avec-trigrammes">5.4 Insertion avec trigrammes</h2>
 <div class="sourceCode" id="cb16"><pre
 class="sourceCode go"><code class="sourceCode go"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> InsertClientWithTrigrams<span class="op">(</span>nom<span class="op">,</span> email <span class="dt">string</span><span class="op">)</span> <span class="dt">error</span> <span class="op">{</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    nomEnc<span class="op">,</span> _   <span class="op">:=</span> sinacrypt<span class="op">.</span>Crypt<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>nom<span class="op">))</span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    emailEnc<span class="op">,</span> _ <span class="op">:=</span> sinacrypt<span class="op">.</span>Crypt<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>email<span class="op">))</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    nomEnc<span class="op">,</span> _   <span class="op">:=</span> sinacrypt<span class="op">.</span>RGPDCrypt<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>nom<span class="op">))</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    emailEnc<span class="op">,</span> _ <span class="op">:=</span> sinacrypt<span class="op">.</span>RGPDCrypt<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>email<span class="op">))</span></span>
 <span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Trigrammes du nom</span></span>
 <span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    nomTrigrams <span class="op">:=</span> trigramIndices<span class="op">(</span>nom<span class="op">)</span></span>
@@ -812,8 +815,8 @@ class="sourceCode go"><code class="sourceCode go"><span id="cb17-1"><a href="#cb
 <span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> rows<span class="op">.</span>Next<span class="op">()</span> <span class="op">{</span></span>
 <span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>        <span class="kw">var</span> nomEnc<span class="op">,</span> emailEnc <span class="op">[]</span><span class="dt">byte</span></span>
 <span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>        rows<span class="op">.</span>Scan<span class="op">(&amp;</span>nomEnc<span class="op">,</span> <span class="op">&amp;</span>emailEnc<span class="op">)</span></span>
-<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>        nomDec<span class="op">,</span> _   <span class="op">:=</span> sinacrypt<span class="op">.</span>Decrypt<span class="op">(</span>nomEnc<span class="op">)</span></span>
-<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>        emailDec<span class="op">,</span> _ <span class="op">:=</span> sinacrypt<span class="op">.</span>Decrypt<span class="op">(</span>emailEnc<span class="op">)</span></span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>        nomDec<span class="op">,</span> _   <span class="op">:=</span> sinacrypt<span class="op">.</span>RGPDDecrypt<span class="op">(</span>nomEnc<span class="op">)</span></span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>        emailDec<span class="op">,</span> _ <span class="op">:=</span> sinacrypt<span class="op">.</span>RGPDDecrypt<span class="op">(</span>emailEnc<span class="op">)</span></span>
 <span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a>        results <span class="op">=</span> <span class="bu">append</span><span class="op">(</span>results<span class="op">,</span> Client<span class="op">{</span></span>
 <span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a>            Nom<span class="op">:</span>   <span class="dt">string</span><span class="op">(</span>nomDec<span class="op">),</span></span>
 <span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a>            Email<span class="op">:</span> <span class="dt">string</span><span class="op">(</span>emailDec<span class="op">),</span></span>
@@ -866,7 +869,7 @@ class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb19
 <p><strong>Flux d’écriture</strong> :</p>
 <ol type="1">
 <li>L’application reçoit les données en clair</li>
-<li><code>sina_crypt()</code> chiffre chaque champ sensible</li>
+<li><code>sina_rgpd_crypt()</code> chiffre chaque champ sensible</li>
 <li><code>blindIndex()</code> calcule le hash HMAC de chaque champ
 indexé</li>
 <li><code>trigramIndices()</code> calcule les trigrammes hashés des
@@ -878,7 +881,8 @@ champs nécessitant la recherche partielle</li>
 <li>L’application calcule l’indice de la requête (blind ou
 trigrammes)</li>
 <li>La base de données retourne les lignes correspondantes</li>
-<li><code>sina_decrypt()</code> déchiffre les champs nécessaires</li>
+<li><code>sina_rgpd_decrypt()</code> déchiffre les champs
+nécessaires</li>
 </ol>
 <h1 id="performances">7. Performances</h1>
 <table>
@@ -891,12 +895,12 @@ trigrammes)</li>
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>sina_crypt()</code> — 1 champ</td>
+<td><code>sina_rgpd_crypt()</code> — 1 champ</td>
 <td>0,02 ms</td>
 <td>AES-NI</td>
 </tr>
 <tr class="even">
-<td><code>sina_decrypt()</code> — 1 champ</td>
+<td><code>sina_rgpd_decrypt()</code> — 1 champ</td>
 <td>0,02 ms</td>
 <td>AES-NI</td>
 </tr>
