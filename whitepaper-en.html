@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="SINAINSIGHT SAS" />
+  <title>GDPR Encryption for Databases</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {  background-color: #f8f8f8; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ef2929; } /* Alert */
+    code span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #204a87; } /* Attribute */
+    code span.bn { color: #0000cf; } /* BaseN */
+    code span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4e9a06; } /* Char */
+    code span.cn { color: #8f5902; } /* Constant */
+    code span.co { color: #8f5902; font-style: italic; } /* Comment */
+    code span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+    code span.dt { color: #204a87; } /* DataType */
+    code span.dv { color: #0000cf; } /* DecVal */
+    code span.er { color: #a40000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #0000cf; } /* Float */
+    code span.fu { color: #204a87; font-weight: bold; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+    code span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+    code span.ot { color: #8f5902; } /* Other */
+    code span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+    code span.sc { color: #ce5c00; font-weight: bold; } /* SpecialChar */
+    code span.ss { color: #4e9a06; } /* SpecialString */
+    code span.st { color: #4e9a06; } /* String */
+    code span.va { color: #000000; } /* Variable */
+    code span.vs { color: #4e9a06; } /* VerbatimString */
+    code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+    :root { --accent: #1a56db; --accent-light: #e8f0fe; --warning-bg: #fef2f2; --warning-border: #dc2626; --info-bg: #eff6ff; --info-border: #2563eb; --text: #1f2937; --text-light: #6b7280; --bg: #fff; --code-bg: #f8f9fa; --border: #e5e7eb; }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --accent: #60a5fa; --accent-light: #1e3a5f; --warning-bg: #2d1b1b; --warning-border: #ef4444; --info-bg: #1e293b; --info-border: #3b82f6; --text: #e5e7eb; --text-light: #9ca3af; --bg: #111827; --code-bg: #1f2937; --border: #374151; } }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--text); background: var(--bg); max-width: 52em; margin: 0 auto; padding: 2em 1.5em; line-height: 1.65; }
+    h1, h2, h3 { color: var(--accent); margin-top: 2em; }
+    h1 { font-size: 1.8em; border-bottom: 2px solid var(--accent); padding-bottom: .3em; }
+    table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: .95em; }
+    th, td { border: 1px solid var(--border); padding: .5em .8em; text-align: left; }
+    th { background: var(--accent-light); font-weight: 600; }
+    pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 1em; overflow-x: auto; font-size: .9em; }
+    code { font-family: "JetBrains Mono", "Fira Code", Consolas, monospace; font-size: .9em; }
+    p code { background: var(--code-bg); padding: .15em .4em; border-radius: 3px; }
+    a { color: var(--accent); }
+    .warning-box { background: var(--warning-bg); border-left: 4px solid var(--warning-border); padding: 1em 1.5em; margin: 1.5em 0; border-radius: 0 6px 6px 0; }
+    .warning-box::before { content: "⚠️ Warning"; display: block; font-weight: 700; margin-bottom: .5em; color: var(--warning-border); }
+    .info-box { background: var(--info-bg); border-left: 4px solid var(--info-border); padding: 1em 1.5em; margin: 1.5em 0; border-radius: 0 6px 6px 0; }
+    .center { text-align: center; margin: 2em 0; }
+    header#title-block-header { text-align: center; margin-bottom: 3em; border-bottom: 2px solid var(--border); padding-bottom: 1.5em; }
+    header#title-block-header h1 { border-bottom: none; font-size: 2em; color: var(--text); }
+    header#title-block-header .subtitle { font-size: 1.2em; color: var(--text-light); margin-top: .3em; }
+    header#title-block-header .author { color: var(--accent); font-weight: 600; }
+    header#title-block-header .date { color: var(--text-light); }
+    nav#TOC { background: var(--accent-light); padding: 1.2em 1.5em; border-radius: 8px; margin-bottom: 2em; }
+    nav#TOC ul { list-style: none; padding-left: 1em; } nav#TOC > ul { padding-left: 0; }
+    nav#TOC li { margin: .3em 0; } nav#TOC a { text-decoration: none; }
+    .footer-block { margin-top: 3em; padding-top: 1.5em; border-top: 2px solid var(--border); text-align: center; color: var(--text-light); font-size: .9em; }
+    @media print { body { max-width: none; font-size: 11pt; } nav#TOC { break-after: page; } }
+  </style>
+<body>
+<header id="title-block-header">
+<h1 class="title">GDPR Encryption for Databases</h1>
+<p class="subtitle">Blind indices and trigrams for searching encrypted
+data</p>
+<p class="author">SINAINSIGHT SAS</p>
+<p class="date">November 2026</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#introduction" id="toc-introduction">1.
+Introduction</a></li>
+<li><a href="#le-problème-chiffrement-vs-recherche"
+id="toc-le-problème-chiffrement-vs-recherche">2. The problem:
+encryption vs search</a>
+<ul>
+<li><a href="#chiffrement-classique" id="toc-chiffrement-classique">2.1
+Classical encryption</a></li>
+<li><a href="#le-dilemme-des-entreprises"
+id="toc-le-dilemme-des-entreprises">2.2 The enterprise
+dilemma</a></li>
+</ul></li>
+<li><a href="#lib_sina_crypt-chiffrement-au-niveau-du-champ"
+id="toc-lib_sina_crypt-chiffrement-au-niveau-du-champ">3. lib_sina_crypt:
+field-level encryption</a>
+<ul>
+<li><a href="#caractéristiques" id="toc-caractéristiques">3.1
+Features</a></li>
+<li><a href="#exemple-de-chiffrement-rgpd-c"
+id="toc-exemple-de-chiffrement-rgpd-c">3.2 GDPR encryption example
+(C)</a></li>
+<li><a href="#exemple-de-chiffrement-rgpd-go"
+id="toc-exemple-de-chiffrement-rgpd-go">3.3 GDPR encryption example
+(Go)</a></li>
+<li><a href="#exemple-de-chiffrement-rgpd-python"
+id="toc-exemple-de-chiffrement-rgpd-python">3.4 GDPR encryption example
+(Python)</a></li>
+<li><a href="#api-rgpd" id="toc-api-rgpd">3.5 GDPR API</a></li>
+</ul></li>
+<li><a href="#indices-aveugles-blind-index"
+id="toc-indices-aveugles-blind-index">4. Blind Indices (Blind
+Index)</a>
+<ul>
+<li><a href="#principe" id="toc-principe">4.1 Principle</a></li>
+<li><a href="#schéma-de-base-de-données"
+id="toc-schéma-de-base-de-données">4.2 Database
+schema</a></li>
+<li><a href="#insertion-dun-enregistrement"
+id="toc-insertion-dun-enregistrement">4.3 Inserting a
+record</a></li>
+<li><a href="#recherche-par-indice-aveugle"
+id="toc-recherche-par-indice-aveugle">4.4 Searching by blind
+index</a></li>
+</ul></li>
+<li><a href="#indices-trigrammes-n-gram-index"
+id="toc-indices-trigrammes-n-gram-index">5. Trigram Indices (N-gram
+Index)</a>
+<ul>
+<li><a href="#principe-1" id="toc-principe-1">5.1 Principle</a></li>
+<li><a href="#schéma-de-base-de-données-1"
+id="toc-schéma-de-base-de-données-1">5.2 Database
+schema</a></li>
+<li><a href="#génération-des-trigrammes"
+id="toc-génération-des-trigrammes">5.3 Generating
+trigrams</a></li>
+<li><a href="#insertion-avec-trigrammes"
+id="toc-insertion-avec-trigrammes">5.4 Insertion with
+trigrams</a></li>
+<li><a href="#recherche-partielle-par-trigrammes"
+id="toc-recherche-partielle-par-trigrammes">5.5 Partial search using
+trigrams</a></li>
+<li><a href="#mongodb-recherche-avec-all"
+id="toc-mongodb-recherche-avec-all">5.6 MongoDB: search with
+<code>$all</code></a></li>
+</ul></li>
+<li><a href="#architecture-de-référence"
+id="toc-architecture-de-référence">6. Reference Architecture</a></li>
+<li><a href="#performances" id="toc-performances">7.
+Performance</a></li>
+<li><a href="#considérations-de-sécurité"
+id="toc-considérations-de-sécurité">8. Security Considerations</a>
+<ul>
+<li><a href="#gestion-des-clés" id="toc-gestion-des-clés">8.1 Key
+management</a></li>
+<li><a href="#limites-des-indices-aveugles"
+id="toc-limites-des-indices-aveugles">8.2 Limitations of blind
+indices</a></li>
+<li><a href="#limites-des-trigrammes"
+id="toc-limites-des-trigrammes">8.3 Limitations of trigrams</a></li>
+<li><a href="#version-freemium-vs-production"
+id="toc-version-freemium-vs-production">8.4 FreeMium vs production
+version</a></li>
+</ul></li>
+<li><a href="#conformité-réglementaire"
+id="toc-conformité-réglementaire">9. Regulatory Compliance</a>
+<ul>
+<li><a href="#rgpd" id="toc-rgpd">9.1 GDPR</a></li>
+<li><a href="#pci-dss" id="toc-pci-dss">9.2 PCI DSS</a></li>
+</ul></li>
+<li><a href="#pour-aller-plus-loin" id="toc-pour-aller-plus-loin">10.
+Going Further</a></li>
+</ul>
+</nav>
+<div class="warning-box">
+<p><strong>FreeMium evaluation version (License
+FREEMIUM-00001)</strong></p>
+<p>This version uses a CLIENT_NUMBER shared among all
+FreeMium users. Any FreeMium user can decrypt
+data encrypted by another FreeMium user.</p>
+<p><strong>Internal use and evaluation only.</strong> Use
+in production at your own risk. SINAINSIGHT SAS disclaims all
+liability in case of production use.</p>
+<p>For a commercial license with a dedicated client key:
+<code>contact@sinainsight.eu</code></p>
+</div>
+<h1 id="introduction">1. Introduction</h1>
+<p>The General Data Protection Regulation (GDPR) requires data
+controllers to implement appropriate technical measures to protect
+personal data (Article 32). Encryption is explicitly cited as a
+pseudonymization measure (Article 4, paragraph 5) and as an
+appropriate security measure.</p>
+<p>However, encrypting database columns poses a fundamental problem:
+<strong>encrypted data can no longer be queried</strong>. An
+<code>email</code> column encrypted with AES-256-GCM can no longer be
+used in a <code>WHERE email = 'dupont@example.com'</code>, nor in a
+<code>WHERE email LIKE '%dupont%'</code>.</p>
+<p>This document presents a complete solution using
+<strong>lib_sina_crypt</strong>, SINAINSIGHT's field-level encryption
+library, with two techniques that restore search capability on
+encrypted data:</p>
+<ul>
+<li><strong>Blind indices (blind index)</strong> for exact
+search</li>
+<li><strong>Trigram indices (N-gram index)</strong> for partial
+search</li>
+</ul>
+<h1 id="le-problème-chiffrement-vs-recherche">2. The problem:
+encryption vs search</h1>
+<h2 id="chiffrement-classique">2.1 Classical encryption</h2>
+<p>AES-256-GCM encryption is an authenticated encryption scheme: it
+guarantees data confidentiality and integrity. Each encryption operation
+produces a different ciphertext thanks to the nonce (number used
+once).</p>
+<pre><code>Encrypt("dupont@example.com") → "aG9tZSBpbiB0..."  (run 1)
+Encrypt("dupont@example.com") → "bXVzdCBoYXZl..."  (run 2)</code></pre>
+<p><strong>Consequence</strong>: same plaintext value → different
+ciphertexts. Impossible to use <code>WHERE</code> or build an index.</p>
+<h2 id="le-dilemme-des-entreprises">2.2 The enterprise dilemma</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Approach</th>
+<th style="text-align: center;">Confidentiality</th>
+<th style="text-align: center;">Search</th>
+<th style="text-align: center;">GDPR Compliance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>No encryption</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">No (Art. 32)</td>
+</tr>
+<tr class="even">
+<td>Full encryption</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">Yes but unusable</td>
+</tr>
+<tr class="odd">
+<td>Encryption + blind index</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">Exact</td>
+<td style="text-align: center;">Yes</td>
+</tr>
+<tr class="even">
+<td>Encryption + trigrams</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">Partial</td>
+<td style="text-align: center;">Yes</td>
+</tr>
+</tbody>
+</table>
+<h1 id="lib_sina_crypt-chiffrement-au-niveau-du-champ">3. lib_sina_crypt:
+field-level encryption</h1>
+<h2 id="caractéristiques">3.1 Features</h2>
+<p>lib_sina_crypt is an AES-256-GCM library with a strictly monotone
+deterministic nonce, guaranteed unique and cross-platform
+(INPI patent FR2601046).</p>
+<table>
+<thead>
+<tr class="header">
+<th>Property</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Algorithm</td>
+<td>AES-256-GCM (authenticated encryption)</td>
+</tr>
+<tr class="even">
+<td>Acceleration</td>
+<td>Hardware AES-NI</td>
+</tr>
+<tr class="odd">
+<td>Performance</td>
+<td>0.02 ms per field</td>
+</tr>
+<tr class="even">
+<td>Nonce</td>
+<td>Deterministic, strictly monotone</td>
+</tr>
+<tr class="odd">
+<td>Bindings</td>
+<td>C, Go, Python, Rust, Node.js</td>
+</tr>
+<tr class="even">
+<td>Linking</td>
+<td>Static (.a / .lib)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="exemple-de-chiffrement-rgpd-c">3.2 GDPR Encryption Example
+(C)</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">"sina_crypt.h"</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">// Encrypt a GDPR field for database storage</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="dt">const</span> <span class="dt">char</span> <span class="op">*</span>email <span class="op">=</span> <span class="st">"dupont@example.com"</span><span class="op">;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dt">size_t</span> msg_len <span class="op">=</span> strlen<span class="op">(</span>email<span class="op">);</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="dt">uint8_t</span> buffer<span class="op">[</span><span class="dv">4096</span><span class="op">];</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="dt">size_t</span> output_len<span class="op">;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>memcpy<span class="op">(</span>buffer<span class="op">,</span> email<span class="op">,</span> msg_len<span class="op">);</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>sina_rgpd_crypt<span class="op">(</span>buffer<span class="op">,</span> <span class="kw">sizeof</span><span class="op">(</span>buffer<span class="op">),</span> msg_len<span class="op">,</span> <span class="op">&amp;</span>output_len<span class="op">);</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">// Decryption</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="dt">size_t</span> dec_len<span class="op">;</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>sina_rgpd_decrypt<span class="op">(</span>buffer<span class="op">,</span> <span class="kw">sizeof</span><span class="op">(</span>buffer<span class="op">),</span> output_len<span class="op">,</span> <span class="op">&amp;</span>dec_len<span class="op">);</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>buffer<span class="op">[</span>dec_len<span class="op">]</span> <span class="op">=</span> <span class="ch">'\0'</span><span class="op">;</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co">// buffer == "dupont@example.com"</span></span></code></pre></div>
+<h2 id="exemple-de-chiffrement-rgpd-go">3.3 GDPR Encryption Example
+(Go)</h2>
+<div class="sourceCode" id="cb3"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> sinacrypt <span class="st">&quot;gitlab.com/sina_project_group/lib_sina_crypt/go&quot;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>email <span class="op">:=</span> <span class="op">[]</span><span class="dt">byte</span><span class="op">(</span><span class="st">&quot;dupont@example.com&quot;</span><span class="op">)</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>encrypted<span class="op">,</span> err <span class="op">:=</span> sinacrypt<span class="op">.</span>RGPDCrypt<span class="op">(</span>email<span class="op">)</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> err <span class="op">!=</span> <span class="ot">nil</span> <span class="op">{</span> log<span class="op">.</span>Fatal<span class="op">(</span>err<span class="op">)</span> <span class="op">}</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>decrypted<span class="op">,</span> err <span class="op">:=</span> sinacrypt<span class="op">.</span>RGPDDecrypt<span class="op">(</span>encrypted<span class="op">)</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> err <span class="op">!=</span> <span class="ot">nil</span> <span class="op">{</span> log<span class="op">.</span>Fatal<span class="op">(</span>err<span class="op">)</span> <span class="op">}</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">// string(decrypted) == &quot;dupont@example.com&quot;</span></span></code></pre></div>
+<h2 id="exemple-de-chiffrement-rgpd-python">3.4 GDPR Encryption Example
+— Python</h2>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sina_crypt</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>email <span class="op">=</span> <span class="st">b&quot;dupont@example.com&quot;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>encrypted <span class="op">=</span> sina_crypt.rgpd_crypt(email)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>decrypted <span class="op">=</span> sina_crypt.rgpd_decrypt(encrypted)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># decrypted == b&quot;dupont@example.com&quot;</span></span></code></pre></div>
+<h2 id="api-rgpd">3.5 GDPR API</h2>
+<p>For encrypting personal data in databases,
+lib_sina_crypt provides a <strong>dedicated GDPR API</strong> available
+in all three languages:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Language</th>
+<th>GDPR Encryption</th>
+<th>GDPR Decryption</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>C</td>
+<td><code>sina_rgpd_crypt()</code></td>
+<td><code>sina_rgpd_decrypt()</code></td>
+</tr>
+<tr class="even">
+<td>Go</td>
+<td><code>sinacrypt.RGPDCrypt()</code></td>
+<td><code>sinacrypt.RGPDDecrypt()</code></td>
+</tr>
+<tr class="odd">
+<td>Python</td>
+<td><code>sina_crypt.rgpd_crypt()</code></td>
+<td><code>sina_crypt.rgpd_decrypt()</code></td>
+</tr>
+</tbody>
+</table>
+<p>These functions encrypt using AES-256-GCM with a strictly monotone
+nonce. Each encryption call on the same plaintext value produces a
+<strong>different ciphertext</strong> (unique nonce), but all decrypt
+correctly.</p>
+<p>Encryption is <strong>authenticated</strong>: a tampered message
+or one decrypted with the wrong CLIENT_NUMBER triggers an
+<strong>error</strong> (GCM tag verification), never a partial or
+corrupted decryption.</p>
+<p>All examples in this document use this GDPR API.</p>
+<h1 id="indices-aveugles-blind-index">4. Blind Indices (Blind
+Index)</h1>
+<h2 id="principe">4.1 Principle</h2>
+<p>A <strong>blind index</strong> is an HMAC-SHA256 hash of the
+plaintext, computed with a secret key dedicated to indices. It produces a
+deterministic fingerprint: same input → same hash, which enables
+equality (<code>=</code>) and <code>JOIN</code>, but does not reveal
+the content.</p>
+<pre><code>HMAC-SHA256("dupont@example.com", index_key)
+  → "a3f8c9d1e2b4..."  (always the same)</code></pre>
+<p><strong>Security properties</strong>:</p>
+<ul>
+<li>The HMAC cannot be reversed (one-way function)</li>
+<li>Without the index key, the attacker cannot pre-compute
+hashes</li>
+<li>The index only reveals equality: two rows with the same hash
+have the same plaintext value, but the value remains unknown</li>
+</ul>
+<h2 id="schéma-de-base-de-données">4.2 Database Schema</h2>
+<h3 id="postgresql">PostgreSQL</h3>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> clients (</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">id</span>              SERIAL <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">-- Encrypted data (AES-256-GCM via lib_sina_crypt)</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    email_encrypted TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    nom_encrypted   TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    iban_encrypted  TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">-- Blind indices (HMAC-SHA256)</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    email_blind_idx <span class="dt">CHAR</span>(<span class="dv">64</span>) <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    nom_blind_idx   <span class="dt">CHAR</span>(<span class="dv">64</span>) <span class="kw">NOT</span> <span class="kw">NULL</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">INDEX</span> idx_clients_email <span class="kw">ON</span> clients(email_blind_idx);</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">INDEX</span> idx_clients_nom   <span class="kw">ON</span> clients(nom_blind_idx);</span></code></pre></div>
+<h3 id="mongodb">MongoDB</h3>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>db<span class="op">.</span><span class="fu">createCollection</span>(<span class="st">&quot;clients&quot;</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>db<span class="op">.</span><span class="at">clients</span><span class="op">.</span><span class="fu">createIndex</span>({ <span class="st">&quot;email_blind_idx&quot;</span><span class="op">:</span> <span class="dv">1</span> }<span class="op">,</span> { <span class="dt">unique</span><span class="op">:</span> <span class="kw">true</span> })</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>db<span class="op">.</span><span class="at">clients</span><span class="op">.</span><span class="fu">createIndex</span>({ <span class="st">&quot;nom_blind_idx&quot;</span><span class="op">:</span> <span class="dv">1</span> })</span></code></pre></div>
+<h2 id="insertion-dun-enregistrement">4.3 Inserting a Record</h2>
+<div class="sourceCode" id="cb8"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="op">(</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"crypto/hmac"</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"crypto/sha256"</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"encoding/hex"</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    sinacrypt <span class="st">"gitlab.com/sina_project_group/lib_sina_crypt/go"</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="op">)</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co">// Secret key dedicated to blind indices (different from AES key)</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="kw">var</span> blindIndexKey <span class="op">=</span> <span class="op">[]</span><span class="dt">byte</span><span class="op">(</span><span class="st">"your-secret-index-key-32-bytes"</span><span class="op">)</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> blindIndex<span class="op">(</span>plaintext <span class="op">[]</span><span class="dt">byte</span><span class="op">)</span> <span class="dt">string</span> <span class="op">{</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    mac <span class="op">:=</span> hmac<span class="op">.</span>New<span class="op">(</span>sha256<span class="op">.</span>New<span class="op">,</span> blindIndexKey<span class="op">)</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    mac<span class="op">.</span>Write<span class="op">(</span>plaintext<span class="op">)</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> hex<span class="op">.</span>EncodeToString<span class="op">(</span>mac<span class="op">.</span>Sum<span class="op">(</span><span class="ot">nil</span><span class="op">))</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> InsertClient<span class="op">(</span>email<span class="op">,</span> nom<span class="op">,</span> iban <span class="dt">string</span><span class="op">)</span> <span class="dt">error</span> <span class="op">{</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Encrypt data</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    emailEnc<span class="op">,</span> _ <span class="op">:=</span> sinacrypt<span class="op">.</span>RGPDCrypt<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>email<span class="op">))</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    nomEnc<span class="op">,</span> _   <span class="op">:=</span> sinacrypt<span class="op">.</span>RGPDCrypt<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>nom<span class="op">))</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    ibanEnc<span class="op">,</span> _  <span class="op">:=</span> sinacrypt<span class="op">.</span>RGPDCrypt<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>iban<span class="op">))</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Compute blind indices</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>    emailIdx <span class="op">:=</span> blindIndex<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>email<span class="op">))</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>    nomIdx   <span class="op">:=</span> blindIndex<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>nom<span class="op">))</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Insert into database</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>    _<span class="op">,</span> err <span class="op">:=</span> db<span class="op">.</span>Exec<span class="op">(</span><span class="st">`</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="st">        INSERT INTO clients</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="st">            (email_encrypted, nom_encrypted, iban_encrypted,</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="st">             email_blind_idx, nom_blind_idx)</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a><span class="st">        VALUES ($1, $2, $3, $4, $5)`</span><span class="op">,</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>        emailEnc<span class="op">,</span> nomEnc<span class="op">,</span> ibanEnc<span class="op">,</span> emailIdx<span class="op">,</span> nomIdx<span class="op">)</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> err</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h2 id="recherche-par-indice-aveugle">4.4 Searching by Blind
+Index</h2>
+<div class="sourceCode" id="cb9"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> FindClientByEmail<span class="op">(</span>email <span class="dt">string</span><span class="op">)</span> <span class="op">(*</span>Client<span class="op">,</span> <span class="dt">error</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    idx <span class="op">:=</span> blindIndex<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>email<span class="op">))</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    row <span class="op">:=</span> db<span class="op">.</span>QueryRow<span class="op">(</span><span class="st">`</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="st">        SELECT email_encrypted, nom_encrypted, iban_encrypted</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="st">        FROM clients</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="st">        WHERE email_blind_idx = $1`</span><span class="op">,</span> idx<span class="op">)</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">var</span> emailEnc<span class="op">,</span> nomEnc<span class="op">,</span> ibanEnc <span class="op">[]</span><span class="dt">byte</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">:=</span> row<span class="op">.</span>Scan<span class="op">(&amp;</span>emailEnc<span class="op">,</span> <span class="op">&amp;</span>nomEnc<span class="op">,</span> <span class="op">&amp;</span>ibanEnc<span class="op">);</span> err <span class="op">!=</span> <span class="ot">nil</span> <span class="op">{</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="ot">nil</span><span class="op">,</span> err</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Decryption</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    emailDec<span class="op">,</span> _ <span class="op">:=</span> sinacrypt<span class="op">.</span>RGPDDecrypt<span class="op">(</span>emailEnc<span class="op">)</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    nomDec<span class="op">,</span> _   <span class="op">:=</span> sinacrypt<span class="op">.</span>RGPDDecrypt<span class="op">(</span>nomEnc<span class="op">)</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    ibanDec<span class="op">,</span> _  <span class="op">:=</span> sinacrypt<span class="op">.</span>RGPDDecrypt<span class="op">(</span>ibanEnc<span class="op">)</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">&amp;</span>Client<span class="op">{</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>        Email<span class="op">:</span> <span class="dt">string</span><span class="op">(</span>emailDec<span class="op">),</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>        Nom<span class="op">:</span>   <span class="dt">string</span><span class="op">(</span>nomDec<span class="op">),</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>        IBAN<span class="op">:</span>  <span class="dt">string</span><span class="op">(</span>ibanDec<span class="op">),</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span> <span class="ot">nil</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p><strong>Performance</strong>: the search uses the standard B-tree
+index of the database. Search time is identical to searching on an
+unencrypted column, plus decryption time (0.02 ms per field).</p>
+<h1 id="indices-trigrammes-n-gram-index">5. Trigram Indices (N-gram
+Index)</h1>
+<h2 id="principe-1">5.1 Principle</h2>
+<p>Blind indices only support exact equality. For partial search
+(<code>LIKE '%dupont%'</code>), we use <strong>trigram
+indices</strong>: the plaintext is split into 3-character substrings
+(trigrams), and each trigram is hashed individually.</p>
+<pre><code>"dupont" → {"dup", "upo", "pon", "ont"}
+         → {HMAC("dup"), HMAC("upo"), HMAC("pon"), HMAC("ont")}</code></pre>
+<p>To search for <code>"pont"</code>, we compute the trigrams of the
+query (<code>{"pon", "ont"}</code>) and look for rows that contain
+<strong>all</strong> of these trigrams.</p>
+<h2 id="schéma-de-base-de-données-1">5.2 Database Schema</h2>
+<h3 id="postgresql-avec-table-de-trigrammes">PostgreSQL with trigram
+table</h3>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Main table</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> clients (</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">id</span>              SERIAL <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    nom_encrypted   TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    email_encrypted TEXT <span class="kw">NOT</span> <span class="kw">NULL</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="co">-- Trigram table</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> client_trigrams (</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    client_id   <span class="dt">INTEGER</span> <span class="kw">REFERENCES</span> clients(<span class="kw">id</span>) <span class="kw">ON</span> <span class="kw">DELETE</span> <span class="kw">CASCADE</span>,</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    field_name  <span class="dt">VARCHAR</span>(<span class="dv">32</span>) <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    trigram_idx <span class="dt">CHAR</span>(<span class="dv">64</span>) <span class="kw">NOT</span> <span class="kw">NULL</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">INDEX</span> idx_trigrams <span class="kw">ON</span> client_trigrams(field_name, trigram_idx);</span></code></pre></div>
+<h3 id="mongodb-avec-tableau-embarqué">MongoDB with embedded
+array</h3>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Client document</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">_id</span><span class="op">:</span> <span class="fu">ObjectId</span>(<span class="st">&quot;...&quot;</span>)<span class="op">,</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">nom_encrypted</span><span class="op">:</span> <span class="st">&quot;aG9tZSBp...&quot;</span><span class="op">,</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">email_encrypted</span><span class="op">:</span> <span class="st">&quot;bXVzdCBo...&quot;</span><span class="op">,</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">nom_trigrams</span><span class="op">:</span> [</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;a3f8c9d1...&quot;</span><span class="op">,</span>  <span class="co">// HMAC(&quot;dup&quot;)</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;b2e7d0c3...&quot;</span><span class="op">,</span>  <span class="co">// HMAC(&quot;upo&quot;)</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;c1d6e4f5...&quot;</span><span class="op">,</span>  <span class="co">// HMAC(&quot;pon&quot;)</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;d0c5f3e2...&quot;</span>   <span class="co">// HMAC(&quot;ont&quot;)</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>db<span class="op">.</span><span class="at">clients</span><span class="op">.</span><span class="fu">createIndex</span>({ <span class="st">&quot;nom_trigrams&quot;</span><span class="op">:</span> <span class="dv">1</span> })</span></code></pre></div>
+<h2 id="génération-des-trigrammes">5.3 Generating Trigrams</h2>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode go"><code class="sourceCode go"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> trigrams<span class="op">(</span>s <span class="dt">string</span><span class="op">)</span> <span class="op">[]</span><span class="dt">string</span> <span class="op">{</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> strings<span class="op">.</span>ToLower<span class="op">(</span>s<span class="op">)</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">len</span><span class="op">(</span>s<span class="op">)</span> <span class="op">&lt;</span> <span class="dv">3</span> <span class="op">{</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="op">[]</span><span class="dt">string</span><span class="op">{</span>s<span class="op">}</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    result <span class="op">:=</span> <span class="bu">make</span><span class="op">([]</span><span class="dt">string</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="bu">len</span><span class="op">(</span>s<span class="op">)-</span><span class="dv">2</span><span class="op">)</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="op">:=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;=</span> <span class="bu">len</span><span class="op">(</span>s<span class="op">)-</span><span class="dv">3</span><span class="op">;</span> i<span class="op">++</span> <span class="op">{</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> <span class="bu">append</span><span class="op">(</span>result<span class="op">,</span> s<span class="op">[</span>i<span class="op">:</span>i<span class="op">+</span><span class="dv">3</span><span class="op">])</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> trigramIndices<span class="op">(</span>plaintext <span class="dt">string</span><span class="op">)</span> <span class="op">[]</span><span class="dt">string</span> <span class="op">{</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    tris <span class="op">:=</span> trigrams<span class="op">(</span>plaintext<span class="op">)</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    indices <span class="op">:=</span> <span class="bu">make</span><span class="op">([]</span><span class="dt">string</span><span class="op">,</span> <span class="bu">len</span><span class="op">(</span>tris<span class="op">))</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i<span class="op">,</span> tri <span class="op">:=</span> <span class="kw">range</span> tris <span class="op">{</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>        mac <span class="op">:=</span> hmac<span class="op">.</span>New<span class="op">(</span>sha256<span class="op">.</span>New<span class="op">,</span> blindIndexKey<span class="op">)</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>        mac<span class="op">.</span>Write<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>tri<span class="op">))</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>        indices<span class="op">[</span>i<span class="op">]</span> <span class="op">=</span> hex<span class="op">.</span>EncodeToString<span class="op">(</span>mac<span class="op">.</span>Sum<span class="op">(</span><span class="ot">nil</span><span class="op">))</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> indices</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h2 id="insertion-avec-trigrammes">5.4 Insertion with Trigrams</h2>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode go"><code class="sourceCode go"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> InsertClientWithTrigrams<span class="op">(</span>nom<span class="op">,</span> email <span class="dt">string</span><span class="op">)</span> <span class="dt">error</span> <span class="op">{</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    nomEnc<span class="op">,</span> _   <span class="op">:=</span> sinacrypt<span class="op">.</span>RGPDCrypt<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>nom<span class="op">))</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    emailEnc<span class="op">,</span> _ <span class="op">:=</span> sinacrypt<span class="op">.</span>RGPDCrypt<span class="op">([]</span><span class="dt">byte</span><span class="op">(</span>email<span class="op">))</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Name trigrams</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    nomTrigrams <span class="op">:=</span> trigramIndices<span class="op">(</span>nom<span class="op">)</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">// PostgreSQL: insert + trigrams</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    tx<span class="op">,</span> _ <span class="op">:=</span> db<span class="op">.</span>Begin<span class="op">()</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">var</span> id <span class="dt">int</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    tx<span class="op">.</span>QueryRow<span class="op">(</span><span class="st">`INSERT INTO clients (nom_encrypted, email_encrypted)</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="st">                 VALUES ($1, $2) RETURNING id`</span><span class="op">,</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>                 nomEnc<span class="op">,</span> emailEnc<span class="op">).</span>Scan<span class="op">(&amp;</span>id<span class="op">)</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _<span class="op">,</span> tri <span class="op">:=</span> <span class="kw">range</span> nomTrigrams <span class="op">{</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>        tx<span class="op">.</span>Exec<span class="op">(</span><span class="st">`INSERT INTO client_trigrams</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a><span class="st">                 (client_id, field_name, trigram_idx)</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="st">                 VALUES ($1, 'nom', $2)`</span><span class="op">,</span> id<span class="op">,</span> tri<span class="op">)</span></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> tx<span class="op">.</span>Commit<span class="op">()</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h2 id="recherche-partielle-par-trigrammes">5.5 Partial Search Using
+Trigrams</h2>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode go"><code class="sourceCode go"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> SearchClientsByName<span class="op">(</span>query <span class="dt">string</span><span class="op">)</span> <span class="op">([]</span>Client<span class="op">,</span> <span class="dt">error</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    queryTrigrams <span class="op">:=</span> trigramIndices<span class="op">(</span>query<span class="op">)</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">len</span><span class="op">(</span>queryTrigrams<span class="op">)</span> <span class="op">==</span> <span class="dv">0</span> <span class="op">{</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="ot">nil</span><span class="op">,</span> fmt<span class="op">.</span>Errorf<span class="op">(</span><span class="st">"query too short"</span><span class="op">)</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Build query: all trigrams must match</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">// (set intersection)</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    sqlQuery <span class="op">:=</span> <span class="st">`</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="st">        SELECT c.nom_encrypted, c.email_encrypted</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="st">        FROM clients c</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="st">        WHERE c.id IN (</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="st">            SELECT client_id</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a><span class="st">            FROM client_trigrams</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a><span class="st">            WHERE field_name = 'nom'</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="st">              AND trigram_idx = ANY($1)</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a><span class="st">            GROUP BY client_id</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a><span class="st">            HAVING COUNT(DISTINCT trigram_idx) = $2</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a><span class="st">        )`</span></span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>    rows<span class="op">,</span> err <span class="op">:=</span> db<span class="op">.</span>Query<span class="op">(</span>sqlQuery<span class="op">,</span> pq<span class="op">.</span>Array<span class="op">(</span>queryTrigrams<span class="op">),</span></span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>                          <span class="bu">len</span><span class="op">(</span>queryTrigrams<span class="op">))</span></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="ot">nil</span> <span class="op">{</span> <span class="cf">return</span> <span class="ot">nil</span><span class="op">,</span> err <span class="op">}</span></span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">defer</span> rows<span class="op">.</span>Close<span class="op">()</span></span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>    <span class="kw">var</span> results <span class="op">[]</span>Client</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> rows<span class="op">.</span>Next<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>        <span class="kw">var</span> nomEnc<span class="op">,</span> emailEnc <span class="op">[]</span><span class="dt">byte</span></span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>        rows<span class="op">.</span>Scan<span class="op">(&amp;</span>nomEnc<span class="op">,</span> <span class="op">&amp;</span>emailEnc<span class="op">)</span></span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>        nomDec<span class="op">,</span> _   <span class="op">:=</span> sinacrypt<span class="op">.</span>RGPDDecrypt<span class="op">(</span>nomEnc<span class="op">)</span></span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>        emailDec<span class="op">,</span> _ <span class="op">:=</span> sinacrypt<span class="op">.</span>RGPDDecrypt<span class="op">(</span>emailEnc<span class="op">)</span></span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>        results <span class="op">=</span> <span class="bu">append</span><span class="op">(</span>results<span class="op">,</span> Client<span class="op">{</span></span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a>            Nom<span class="op">:</span>   <span class="dt">string</span><span class="op">(</span>nomDec<span class="op">),</span></span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>            Email<span class="op">:</span> <span class="dt">string</span><span class="op">(</span>emailDec<span class="op">),</span></span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>        <span class="op">})</span></span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> results<span class="op">,</span> <span class="ot">nil</span></span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p><strong>Example</strong>:</p>
+<pre><code>Search "pont" on the name field:
+  "pont" → trigrams: {"pon", "ont"}
+  → HMAC("pon") = "c1d6e4f5..."
+  → HMAC("ont") = "d0c5f3e2..."
+  → SELECT WHERE trigram_idx IN (...) HAVING COUNT = 2
+  → Finds: "Dupont", "Dupont-Martin", "Pontoise"</code></pre>
+<h2 id="mongodb-recherche-avec-all">5.6 MongoDB: search with
+<code>$all</code></h2>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Search "pont" in names</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="kw">var</span> queryTrigrams <span class="op">=</span> <span class="fu">trigramIndices</span>(<span class="st">"pont"</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>db<span class="op">.</span><span class="at">clients</span><span class="op">.</span><span class="fu">find</span>({</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">nom_trigrams</span><span class="op">:</span> { <span class="dt">$all</span><span class="op">:</span> queryTrigrams }</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div>
+<h1 id="architecture-de-référence">6. Reference Architecture</h1>
+<figure style="text-align:center;margin:2em 0">
+<img src="data:image/png;base64,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" alt="Architecture de référence lib_sina_crypt" style="max-width:100%;height:auto;border:1px solid #ddd;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1)" />
+<figcaption style="margin-top:0.5em;color:#666;font-style:italic">Figure 1 — GDPR encryption architecture with blind indices and trigrams</figcaption>
+</figure>
+<p><strong>Write flow</strong>:</p>
+<ol type="1">
+<li>The application receives plaintext data</li>
+<li><code>sina_rgpd_crypt()</code> encrypts each sensitive field</li>
+<li><code>blindIndex()</code> computes the HMAC hash of each indexed
+field</li>
+<li><code>trigramIndices()</code> computes the hashed trigrams of fields
+requiring partial search</li>
+<li>Encrypted data and indices are inserted into the database</li>
+</ol>
+<p><strong>Read flow</strong>:</p>
+<ol type="1">
+<li>The application computes the query index (blind or trigrams)</li>
+<li>The database returns matching rows</li>
+<li><code>sina_rgpd_decrypt()</code> decrypts the required fields</li>
+</ol>
+<h1 id="performances">7. Performance</h1>
+<table>
+<thead>
+<tr class="header">
+<th>Operation</th>
+<th>Time</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>sina_rgpd_crypt()</code> — 1 field</td>
+<td>0.02 ms</td>
+<td>AES-NI</td>
+</tr>
+<tr class="even">
+<td><code>sina_rgpd_decrypt()</code> — 1 field</td>
+<td>0.02 ms</td>
+<td>AES-NI</td>
+</tr>
+<tr class="odd">
+<td>Batch 1,000 fields</td>
+<td>~20 ms</td>
+<td><code>sina_crypt_batch_encrypt()</code></td>
+</tr>
+<tr class="even">
+<td><code>blindIndex()</code> — 1 field</td>
+<td>0.003 ms</td>
+<td>HMAC-SHA256</td>
+</tr>
+<tr class="odd">
+<td><code>trigramIndices()</code> — 10-char word</td>
+<td>0.03 ms</td>
+<td>8 trigrams × HMAC</td>
+</tr>
+<tr class="even">
+<td>Blind index search (PostgreSQL)</td>
+<td>&lt;1 ms</td>
+<td>Standard B-tree index</td>
+</tr>
+<tr class="odd">
+<td>Trigram search (PostgreSQL)</td>
+<td>1–5 ms</td>
+<td>Depends on cardinality</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Total overhead per operation</strong>: field-level encryption
+adds approximately 0.05 ms per field on write and 0.02 ms on read.
+This overhead is negligible compared to the network and disk time of a
+typical SQL query (1–10 ms).</p>
+<h1 id="considérations-de-sécurité">8. Security Considerations</h1>
+<h2 id="gestion-des-clés">8.1 Key Management</h2>
+<ul>
+<li><strong>AES key</strong>: embedded in the static library, protected.
+In production (commercial license), each client has a unique
+CLIENT_NUMBER that derives a different AES key.</li>
+<li><strong>Index key</strong>: separate HMAC-SHA256 key, to be stored
+in a secrets manager (Vault, AWS KMS, etc.).</li>
+<li>The two keys are independent: compromising the index key does not
+compromise the encryption.</li>
+</ul>
+<h2 id="limites-des-indices-aveugles">8.2 Limitations of Blind
+Indices</h2>
+<ul>
+<li><strong>Exact search only</strong>: impossible to use
+<code>LIKE</code>, <code>&gt;</code>, <code>&lt;</code> or
+<code>BETWEEN</code> on a blind index.</li>
+<li><strong>Equality leakage</strong>: an attacker with database access
+can see which rows have the same value (same hash). This is inherent to
+any deterministic search scheme.</li>
+<li><strong>No sorting</strong>: indices do not preserve order.</li>
+</ul>
+<h2 id="limites-des-trigrammes">8.3 Limitations of Trigrams</h2>
+<ul>
+<li><strong>False positives</strong>: trigram search may return
+irrelevant results (same trigrams, different context). Post-decryption
+filtering is recommended.</li>
+<li><strong>Additional storage</strong>: each trigram-indexed field
+generates <code>len(text) - 2</code> hashes of 64 characters.</li>
+<li><strong>Minimum 3-character query</strong>: searches of fewer than 3
+characters are not supported.</li>
+</ul>
+<h2 id="version-freemium-vs-production">8.4 FreeMium vs Production
+Version</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Aspect</th>
+<th style="text-align: center;">FreeMium (FREEMIUM-00001)</th>
+<th style="text-align: center;">Commercial License</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>CLIENT_NUMBER</td>
+<td style="text-align: center;">1 (shared)</td>
+<td style="text-align: center;">Unique and dedicated</td>
+</tr>
+<tr class="even">
+<td>Crypto isolation</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">Yes</td>
+</tr>
+<tr class="odd">
+<td>Interoperability</td>
+<td style="text-align: center;">With all FreeMium users</td>
+<td style="text-align: center;">With your apps only</td>
+</tr>
+<tr class="even">
+<td>Support</td>
+<td style="text-align: center;">None</td>
+<td style="text-align: center;">Included</td>
+</tr>
+<tr class="odd">
+<td>Production</td>
+<td style="text-align: center;">Not recommended</td>
+<td style="text-align: center;">Yes</td>
+</tr>
+</tbody>
+</table>
+<h1 id="conformité-réglementaire">9. Regulatory Compliance</h1>
+<h2 id="rgpd">9.1 GDPR</h2>
+<ul>
+<li><strong>Article 32</strong>: encryption is an appropriate technical
+measure. lib_sina_crypt uses AES-256-GCM, recommended by ANSSI (French
+National Cybersecurity Agency).</li>
+<li><strong>Article 4(5)</strong>: blind indices constitute a form of
+pseudonymization — data is no longer directly identifiable without the
+decryption key.</li>
+<li><strong>Article 34</strong>: in case of a data breach, encrypted
+data is not considered compromised if the key is not affected.</li>
+</ul>
+<h2 id="pci-dss">9.2 PCI DSS</h2>
+<ul>
+<li><strong>Requirement 3.4</strong>: card numbers (PAN) must be
+rendered unreadable. Field-level encryption with lib_sina_crypt satisfies
+this requirement.</li>
+<li><strong>Requirement 3.5</strong>: encryption keys must be protected.
+The AES key is protected within the static library and derived from the
+CLIENT_NUMBER.</li>
+</ul>
+<h1 id="pour-aller-plus-loin">10. Going Further</h1>
+<p>This FreeMium version allows you to evaluate lib_sina_crypt in your
+environment: performance, compatibility, integration with your technical
+stack.</p>
+<p>To move to production with a <strong>dedicated client key</strong>
+guaranteeing cryptographic isolation:</p>
+<div class="center">
+<p><strong>contact@sinainsight.eu</strong></p>
+<p>+33 7 45 10 78 64</p>
+<p><a
+href="https://www.sinainsight.pro/produits/lib-sina-crypt">https://www.sinainsight.pro/produits/lib-sina-crypt</a></p>
+</div>
+<div class="info-box">
+<p><strong>SINAINSIGHT SAS</strong> — RCS Paris 100 212 802</p>
+<p>10 Villa d'Este, 75013 Paris, France</p>
+<p>lib_sina_crypt is protected by registered patent INPI
+FR2601046.</p>
+<p>Copyright © 2024–2026 SINAINSIGHT SAS. All rights reserved.</p>
+</div>
+<div class="footer-block">
+<p><a href="https://github.com/sinainsight/lib-sina-crypt/releases/download/v2.1.0-freemium/lib_sina_crypt-chiffrement-rgpd-bases-de-donnees.pdf">📄 Download as PDF</a>
+ · <a href="https://github.com/sinainsight/lib-sina-crypt/releases/tag/v2.1.0-freemium">📦 Download FreeMium</a>
+ · <a href="https://www.sinainsight.pro">sinainsight.pro</a></p>
+</div>
+</body>
+</html>
