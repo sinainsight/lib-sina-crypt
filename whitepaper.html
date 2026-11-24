@@ -823,16 +823,15 @@ production</h2>
 <h1 id="conformité-réglementaire">9. Conformité réglementaire</h1>
 <h2 id="rgpd">9.1 RGPD</h2>
 <ul>
-<li><strong>Article 32</strong> : le chiffrement est une mesure
-technique appropriée. lib_sina_crypt utilise AES-256-GCM, recommandé par
-l’ANSSI.</li>
-<li><strong>Article 4(5)</strong> : les indices aveugles constituent une
-forme de pseudonymisation — les données ne sont plus directement
-identifiantes sans la clé de déchiffrement.</li>
-<li><strong>Article 34</strong> : en cas de violation de données, les
-données chiffrées ne sont pas considérées comme compromises si la clé
-n’est pas affectée.</li>
+<li><strong>Article 32</strong> — <em>Mesures techniques appropriées</em> : le chiffrement est explicitement cité comme mesure technique appropriée. lib_sina_crypt utilise AES-256-GCM, recommandé par l’ANSSI.</li>
+<li><strong>Article 4(5)</strong> — <em>Pseudonymisation</em> : les indices aveugles (HMAC-SHA256) constituent une forme de pseudonymisation — les données ne sont plus directement identifiantes sans la clé de déchiffrement.</li>
+<li><strong>Article 33</strong> — <em>Notification de violation sous 72 h</em> : les organisations doivent notifier l’autorité de contrôle (CNIL en France) dans les 72 heures suivant la découverte d’une violation de données personnelles. Cette obligation s’applique indépendamment du chiffrement — mais les données chiffrées réduisent significativement l’évaluation de gravité et le périmètre de la notification.</li>
+<li><strong>Article 34(3)(a)</strong> — <em>Safe harbor</em> : si les données violées étaient chiffrées et que la clé n’est pas compromise, le responsable de traitement est <strong>dispensé de notifier les personnes concernées</strong>. C’est l’incitation réglementaire la plus directe au chiffrement au niveau du champ : une violation de données chiffrées n’est pas considérée comme une violation de données personnelles aux fins de la notification individuelle.</li>
+<li><strong>Article 42</strong> — <em>Certification</em> : le RGPD prévoit des mécanismes de certification volontaires. Le premier schéma de certification RGPD approuvé par la CNIL est <strong>Europrivacy/CNIL</strong>, délivré par des organismes tiers accrédités (pas par la CNIL elle-même). La certification porte sur des produits, services, processus ou systèmes de données, et est volontaire — elle ne protège pas d’une sanction en cas de manquement.</li>
 </ul>
+<h3>Contrôle CNIL</h3>
+<p>La CNIL détecte les non-conformités par 5 canaux : plaintes individuelles (16 000+/an), signalements obligatoires sous 72 h (Art. 33), programme annuel de contrôles thématiques, veille médiatique, et contrôles en ligne à distance. Les agents CNIL ont accès aux serveurs, bases de données et tout document — le refus constitue un délit pénal.</p>
+<p><strong>Thèmes prioritaires 2025</strong> : cybersécurité des données de santé et applications mobiles — directement pertinent pour les organisations pharmaceutiques et leurs partenaires collecteurs de données (hôpitaux, laboratoires, CROs).</p>
 <h2 id="pci-dss">9.2 PCI DSS</h2>
 <ul>
 <li><strong>Exigence 3.4</strong> : les numéros de carte (PAN) doivent
