@@ -68,7 +68,7 @@ Une version FreeMium est disponible en téléchargement libre :
 - **Bibliothèque statique** `.a` (Linux x86_64, macOS x86_64)
 - **Python wheel** : `pip install sina_crypt-2.1.0-cp312-cp312-manylinux_2_38_x86_64.whl`
 - **Démo SQLite** interactive (Go + Python)
-- **Whitepaper** : [Chiffrement RGPD des bases de données (HTML)](whitepaper.html) | [PDF](https://github.com/sinainsight/lib-sina-crypt/releases/download/v2.1.0-freemium/lib_sina_crypt-chiffrement-rgpd-bases-de-donnees.pdf)
+- **Whitepaper** : [GDPR Encryption for Databases (EN)](whitepaper-en.html) | [Chiffrement RGPD des bases de données (FR)](whitepaper.html) | [PDF](https://github.com/sinainsight/lib-sina-crypt/releases/download/v2.1.0-freemium/lib_sina_crypt-chiffrement-rgpd-bases-de-donnees.pdf)
 
 👉 [Télécharger la release v2.1.0-freemium](https://github.com/sinainsight/lib-sina-crypt/releases/tag/v2.1.0-freemium)
 

@@ -813,15 +813,15 @@ Version</h2>
 <h1 id="conformité-réglementaire">9. Regulatory Compliance</h1>
 <h2 id="rgpd">9.1 GDPR</h2>
 <ul>
-<li><strong>Article 32</strong>: encryption is an appropriate technical
-measure. lib_sina_crypt uses AES-256-GCM, recommended by ANSSI (French
-National Cybersecurity Agency).</li>
-<li><strong>Article 4(5)</strong>: blind indices constitute a form of
-pseudonymization — data is no longer directly identifiable without the
-decryption key.</li>
-<li><strong>Article 34</strong>: in case of a data breach, encrypted
-data is not considered compromised if the key is not affected.</li>
+<li><strong>Article 32</strong> — <em>Appropriate technical measures</em>: encryption is explicitly listed as an appropriate technical measure. lib_sina_crypt uses AES-256-GCM, recommended by ANSSI (French National Cybersecurity Agency).</li>
+<li><strong>Article 4(5)</strong> — <em>Pseudonymization</em>: blind indices (HMAC-SHA256) constitute a form of pseudonymization — data is no longer directly identifiable without the decryption key.</li>
+<li><strong>Article 33</strong> — <em>72-hour breach notification</em>: organizations must notify the supervisory authority (CNIL in France) within 72 hours of becoming aware of a personal data breach. This obligation applies regardless of encryption status — but encrypted data significantly reduces the severity assessment and the scope of the notification.</li>
+<li><strong>Article 34(3)(a)</strong> — <em>Safe harbor</em>: if the breached data was encrypted and the key was not compromised, the controller is <strong>exempt from notifying affected individuals</strong>. This is the most direct regulatory incentive for field-level encryption: a breach of encrypted data is not considered a breach of personal data for the purpose of individual notification.</li>
+<li><strong>Article 42</strong> — <em>Certification</em>: the GDPR provides for voluntary certification mechanisms. The first GDPR certification scheme approved by the CNIL is <strong>Europrivacy/CNIL</strong>, delivered by accredited third-party certification bodies (not by the CNIL itself). Certification covers products, services, processes or data systems, and is voluntary — it does not shield from sanctions in case of non-compliance.</li>
 </ul>
+<h3>CNIL enforcement</h3>
+<p>The CNIL detects non-compliance through 5 channels: individual complaints (16,000+/year), mandatory 72-hour breach self-reports (Art. 33), annual thematic audit programs, media monitoring, and remote online checks. CNIL agents have authority to access servers, databases, and any document — refusal constitutes a criminal offense.</p>
+<p><strong>2025 priority themes</strong> include health data cybersecurity and mobile applications — directly relevant to pharmaceutical organizations and their data-collecting partners (hospitals, laboratories, CROs).</p>
 <h2 id="pci-dss">9.2 PCI DSS</h2>
 <ul>
 <li><strong>Requirement 3.4</strong>: card numbers (PAN) must be
