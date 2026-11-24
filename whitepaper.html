@@ -832,6 +832,22 @@ production</h2>
 <h3>Contrôle CNIL</h3>
 <p>La CNIL détecte les non-conformités par 5 canaux : plaintes individuelles (16 000+/an), signalements obligatoires sous 72 h (Art. 33), programme annuel de contrôles thématiques, veille médiatique, et contrôles en ligne à distance. Les agents CNIL ont accès aux serveurs, bases de données et tout document — le refus constitue un délit pénal.</p>
 <p><strong>Thèmes prioritaires 2025</strong> : cybersécurité des données de santé et applications mobiles — directement pertinent pour les organisations pharmaceutiques et leurs partenaires collecteurs de données (hôpitaux, laboratoires, CROs).</p>
+<h3>Chiffrement : de la catastrophe au non-événement</h3>
+<p>L'Article 34(3)(a) change fondamentalement le scénario post-incident. Le tableau ci-dessous illustre la différence concrète entre une violation de données en clair et une violation de données chiffrées avec lib_sina_crypt :</p>
+<table>
+<thead>
+<tr><th>Scénario post-incident</th><th>Données en clair</th><th>Données chiffrées (lib_sina_crypt)</th></tr>
+</thead>
+<tbody>
+<tr><td>Notification CNIL (72 h)</td><td>Obligatoire</td><td>Obligatoire</td></tr>
+<tr><td>Notification aux personnes</td><td><strong>Obligatoire</strong> (Art. 34)</td><td><strong>Dispensée</strong> (Art. 34§3a)</td></tr>
+<tr><td>Sanction CNIL</td><td>Quasi-certaine (manquement Art. 32)</td><td><strong>Peu probable</strong> — mesure technique appropriée en place</td></tr>
+<tr><td>Atteinte à la réputation</td><td>Maximale (presse, action collective)</td><td>Minimale — pas de notification publique</td></tr>
+<tr><td>Données exploitables par l'attaquant</td><td>Oui — noms, IBAN, emails lisibles</td><td><strong>Non</strong> — ciphertexts AES-256-GCM inutilisables</td></tr>
+</tbody>
+</table>
+<p><strong>Exemple concret — Free (42 M€ d'amende) :</strong> les 24 millions d'IBAN étaient stockés en clair. Avec lib_sina_crypt, ces IBAN auraient été des ciphertexts AES-256-GCM. Résultat : pas de notification aux 24 millions d'abonnés, pas de 42 M€ d'amende, pas de couverture médiatique. L'incident se réduit à un rapport technique interne.</p>
+<p class="info-box"><strong>Le chiffrement au niveau du champ transforme une catastrophe médiatique et financière en non-événement.</strong> C'est l'argument le plus concret pour justifier l'investissement de quelques jours de développement par base de données.</p>
 <h2 id="pci-dss">9.2 PCI DSS</h2>
 <ul>
 <li><strong>Exigence 3.4</strong> : les numéros de carte (PAN) doivent

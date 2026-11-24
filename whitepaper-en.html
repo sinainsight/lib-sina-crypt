@@ -822,6 +822,22 @@ Version</h2>
 <h3>CNIL enforcement</h3>
 <p>The CNIL detects non-compliance through 5 channels: individual complaints (16,000+/year), mandatory 72-hour breach self-reports (Art. 33), annual thematic audit programs, media monitoring, and remote online checks. CNIL agents have authority to access servers, databases, and any document — refusal constitutes a criminal offense.</p>
 <p><strong>2025 priority themes</strong> include health data cybersecurity and mobile applications — directly relevant to pharmaceutical organizations and their data-collecting partners (hospitals, laboratories, CROs).</p>
+<h3>Encryption: from catastrophe to non-event</h3>
+<p>Article 34(3)(a) fundamentally changes the post-incident scenario. The table below illustrates the concrete difference between a breach of plaintext data and a breach of data encrypted with lib_sina_crypt:</p>
+<table>
+<thead>
+<tr><th>Post-incident scenario</th><th>Plaintext data</th><th>Encrypted data (lib_sina_crypt)</th></tr>
+</thead>
+<tbody>
+<tr><td>DPA notification (72 h)</td><td>Mandatory</td><td>Mandatory</td></tr>
+<tr><td>Individual notification</td><td><strong>Mandatory</strong> (Art. 34)</td><td><strong>Exempt</strong> (Art. 34§3a)</td></tr>
+<tr><td>DPA sanction</td><td>Near-certain (Art. 32 violation)</td><td><strong>Unlikely</strong> — appropriate technical measure in place</td></tr>
+<tr><td>Reputational damage</td><td>Maximum (press coverage, class action)</td><td>Minimal — no public notification required</td></tr>
+<tr><td>Data usable by attacker</td><td>Yes — names, IBANs, emails in cleartext</td><td><strong>No</strong> — AES-256-GCM ciphertexts are unusable</td></tr>
+</tbody>
+</table>
+<p><strong>Real-world example — Free (€42M fine):</strong> 24 million IBANs were stored in plaintext. With lib_sina_crypt, those IBANs would have been AES-256-GCM ciphertexts. Result: no notification to 24 million subscribers, no €42M fine, no press coverage. The incident reduces to an internal technical report.</p>
+<p class="info-box"><strong>Field-level encryption transforms a media and financial catastrophe into a non-event.</strong> This is the most concrete argument for justifying a few days of development per database.</p>
 <h2 id="pci-dss">9.2 PCI DSS</h2>
 <ul>
 <li><strong>Requirement 3.4</strong>: card numbers (PAN) must be
